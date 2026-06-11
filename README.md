@@ -10,7 +10,7 @@ and you **BUST**: your score resets and you burn one of your 3 lives.
 ## Play it
 
 Just open `index.html` in any modern browser — no build step, no server required
-(everything loads from CDNs: React 18, Tailwind CSS, Babel, Lucide icons).
+(React 18, Tailwind CSS, and Babel load from CDNs; icons are embedded inline).
 
 Or serve it locally:
 
