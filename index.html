@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Hoop Darts — NBA 501 Challenge</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏀</text></svg>" />
+  <meta name="description" content="Hoop Darts — the NBA 501 countdown game. Throw NBA players, subtract their career stats, and check out in the zone." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            court:  { DEFAULT: '#F97316', deep: '#EA580C', glow: '#FDBA74', dark: '#7C2D12' },
+            ink:    '#0A0C12',
+            panel:  '#11151F',
+            panel2: '#171C29',
+            line:   '#222938',
+            neon:   '#22D3EE',
+          },
+          fontFamily: {
+            score: ['"Bebas Neue"', 'Impact', 'sans-serif'],
+            body:  ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            glow:  '0 0 24px rgba(249,115,22,0.35)',
+            inner2:'inset 0 1px 0 rgba(255,255,255,0.05)',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- React 18 + Babel + Lucide icons -->
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+
+  <style>
+    html, body { height: 100%; }
+    body {
+      background:
+        radial-gradient(1100px 520px at 50% -8%, rgba(249,115,22,0.10), transparent 70%),
+        radial-gradient(900px 500px at 110% 110%, rgba(34,211,238,0.05), transparent 70%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 90px),
+        #0A0C12;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::selection { background: rgba(249,115,22,0.4); }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #222938; border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: #2E3850; }
+
+    @keyframes pop      { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes shakeX   { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-9px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(4px); } }
+    @keyframes throwIn  { 0% { transform: translateY(-14px) scale(0.92); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+    @keyframes bustFlash{ 0% { opacity: 0.85; } 100% { opacity: 0; } }
+    @keyframes confetti { 0% { transform: translateY(-6vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(112vh) rotate(740deg); opacity: 0.85; } }
+    @keyframes glowPulse{ 0%,100% { filter: drop-shadow(0 0 4px rgba(249,115,22,0.7)); } 50% { filter: drop-shadow(0 0 16px rgba(249,115,22,1)); } }
+    @keyframes riseFade { 0% { transform: translateY(8px); opacity: 0; } 12% { transform: translateY(0); opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+
+    .animate-pop       { animation: pop 0.35s cubic-bezier(.2,1.4,.4,1) both; }
+    .animate-shakeX    { animation: shakeX 0.4s ease both; }
+    .animate-throwIn   { animation: throwIn 0.3s ease both; }
+    .animate-bustFlash { animation: bustFlash 0.9s ease-out both; }
+    .animate-glowPulse { animation: glowPulse 1.4s ease-in-out infinite; }
+    .animate-riseFade  { animation: riseFade 2.6s ease both; }
+
+    .ring-progress { transition: stroke-dashoffset 0.9s cubic-bezier(.3,1,.3,1); }
+    .ball-travel   { transition: transform 0.9s cubic-bezier(.3,1.2,.35,1); }
+    .tabular       { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body class="font-body text-slate-200">
+  <noscript>
+    <div style="padding:2rem;text-align:center;font-family:sans-serif;color:#eee">
+      Hoop Darts needs JavaScript enabled to play. 🏀
+    </div>
+  </noscript>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+    /* ------------------------------------------------------------------ */
+    /* Icons (lucide-react via CDN, with a safe fallback if the CDN fails) */
+    /* ------------------------------------------------------------------ */
+    const LucideLib =
+      window.LucideReact ||
+      window.lucideReact ||
+      new Proxy({}, { get: () => (props) => <span aria-hidden="true">●</span> });
+
+    const {
+      Trophy, Target, Flame, Share2, RotateCcw, Users, User, Calendar,
+      Shuffle, Search, X, Heart, Zap, ChevronRight, Crown, Skull, Check,
+      Copy, History, Award, Info, ArrowLeft, Swords, HelpCircle,
+    } = LucideLib;
+
+    /* ------------------------------------------------------------------ */
+    /* Game constants                                                      */
+    /* ------------------------------------------------------------------ */
+    const START_SCORE   = 501;
+    const CHECKOUT_MIN  = -10;  // landing in [-10, 0] wins; below -10 busts
+    const THROW_CAP     = 180;  // max value of a single throw (perfect dart)
+    const MAX_LIVES     = 3;
+    const DAILY_PREFIX  = 'hoopdarts-daily-';
+
+    const CATEGORIES = [
+      {
+        id: 'td',
+        key: 'td',
+        name: 'Career Triple-Doubles',
+        short: 'Triple-Doubles',
+        emoji: '📊',
+        desc: 'Regular-season career triple-doubles. Westbrook (203) and Big O (181) are haymakers — but the checkout zone belongs to glue guys with 1 or 2.',
+      },
+      {
+        id: 'fifty',
+        key: 'fifty',
+        name: 'Career 50-Point Games',
+        short: '50-Point Games',
+        emoji: '🔥',
+        desc: 'Regular-season games with 50+ points. Wilt sits at a monstrous 118 (capped to 180 rules still apply) — one-night wonders are your finishing darts.',
+      },
+      {
+        id: 'threes',
+        key: 'threes',
+        name: 'Career Seasons with 200+ Three-Pointers',
+        short: '200+ 3PT Seasons',
+        emoji: '🎯',
+        desc: 'Seasons with 200 or more made threes. Splash brothers stack these up — most big men throw a brick (0) here, which burns the throw.',
+      },
+    ];
+
+    /* ------------------------------------------------------------------ */
+    /* Player database (stat values are close approximations, tuned for   */
+    /* gameplay — td: triple-doubles, fifty: 50-pt games, threes: 200+ 3PT */
+    /* seasons)                                                            */
+    /* ------------------------------------------------------------------ */
+    const p = (name, td, fifty, threes) => ({ name, stats: { td, fifty, threes } });
+
+    const PLAYERS = [
+      p('Russell Westbrook', 203, 5, 0),
+      p('Oscar Robertson', 181, 3, 0),
+      p('Nikola Jokic', 167, 5, 0),
+      p('Magic Johnson', 138, 0, 0),
+      p('LeBron James', 122, 15, 0),
+      p('Jason Kidd', 107, 0, 0),
+      p('Luka Doncic', 85, 13, 1),
+      p('James Harden', 82, 23, 7),
+      p('Wilt Chamberlain', 78, 118, 0),
+      p('Domantas Sabonis', 64, 0, 0),
+      p('Larry Bird', 59, 4, 0),
+      p('Giannis Antetokounmpo', 57, 7, 0),
+      p('Fat Lever', 43, 0, 0),
+      p('Draymond Green', 42, 0, 0),
+      p('Ben Simmons', 34, 0, 0),
+      p('Bob Cousy', 33, 0, 0),
+      p('Rajon Rondo', 32, 0, 0),
+      p('John Havlicek', 30, 1, 0),
+      p('Grant Hill', 29, 0, 0),
+      p('Michael Jordan', 28, 31, 0),
+      p('Clyde Drexler', 25, 1, 0),
+      p('Kevin Durant', 24, 9, 0),
+      p('Chris Paul', 23, 0, 0),
+      p('Kareem Abdul-Jabbar', 21, 10, 0),
+      p('Kobe Bryant', 21, 25, 0),
+      p('Charles Barkley', 20, 3, 0),
+      p('Scottie Pippen', 17, 0, 0),
+      p('Kyle Lowry', 17, 0, 1),
+      p('Kevin Garnett', 17, 0, 0),
+      p('Walt Frazier', 17, 1, 0),
+      p('Hakeem Olajuwon', 16, 1, 0),
+      p('David Robinson', 14, 3, 0),
+      p('Trae Young', 14, 2, 2),
+      p('Tyrese Haliburton', 14, 0, 1),
+      p('Julius Erving', 13, 3, 0),
+      p('Penny Hardaway', 13, 1, 0),
+      p('Cade Cunningham', 13, 0, 0),
+      p('Dejounte Murray', 13, 0, 0),
+      p('Lamar Odom', 12, 0, 0),
+      p('Josh Giddey', 12, 0, 0),
+      p('Tim Duncan', 11, 1, 0),
+      p('Stephen Curry', 11, 14, 12),
+      p('Elfrid Payton', 11, 0, 0),
+      p('Ja Morant', 10, 1, 0),
+      p('LaMelo Ball', 10, 0, 1),
+      p('DeMarcus Cousins', 8, 2, 0),
+      p('Evan Turner', 8, 0, 0),
+      p('Bam Adebayo', 7, 0, 0),
+      p('Joakim Noah', 7, 0, 0),
+      p('Nikola Vucevic', 7, 0, 0),
+      p('Jimmy Butler', 7, 1, 0),
+      p('Shaquille O\'Neal', 6, 5, 0),
+      p('Gary Payton', 6, 0, 0),
+      p('Karl Malone', 6, 2, 0),
+      p('Andre Drummond', 6, 0, 0),
+      p('Andre Iguodala', 6, 0, 0),
+      p('Boris Diaw', 6, 0, 0),
+      p('Shai Gilgeous-Alexander', 6, 4, 0),
+      p('Devin Booker', 6, 8, 0),
+      p('Dwyane Wade', 5, 1, 0),
+      p('John Stockton', 5, 0, 0),
+      p('Jrue Holiday', 5, 0, 0),
+      p('Rick Barry', 5, 14, 0),
+      p('Steve Nash', 4, 0, 0),
+      p('Pau Gasol', 4, 0, 0),
+      p('Dwight Howard', 4, 0, 0),
+      p('Anthony Davis', 4, 3, 0),
+      p('Paul George', 4, 1, 3),
+      p('Victor Wembanyama', 4, 1, 0),
+      p('Jayson Tatum', 4, 4, 2),
+      p('Tracy McGrady', 4, 4, 0),
+      p('Al Horford', 4, 0, 0),
+      p('Elgin Baylor', 4, 17, 0),
+      p('Allen Iverson', 3, 11, 0),
+      p('Dirk Nowitzki', 3, 5, 0),
+      p('Damian Lillard', 3, 16, 7),
+      p('De\'Aaron Fox', 3, 1, 0),
+      p('D\'Angelo Russell', 3, 1, 1),
+      p('Kyrie Irving', 3, 4, 1),
+      p('Patrick Ewing', 3, 1, 0),
+      p('Vince Carter', 3, 2, 0),
+      p('Jalen Brunson', 2, 3, 0),
+      p('Jamal Murray', 2, 2, 0),
+      p('Paolo Banchero', 2, 0, 0),
+      p('Pascal Siakam', 2, 1, 0),
+      p('Donovan Mitchell', 2, 5, 3),
+      p('Carmelo Anthony', 2, 6, 0),
+      p('Kawhi Leonard', 2, 0, 0),
+      p('Joel Embiid', 2, 7, 0),
+      p('Anthony Edwards', 2, 2, 1),
+      p('Bradley Beal', 2, 4, 1),
+      p('Zach LaVine', 1, 1, 3),
+      p('Klay Thompson', 1, 3, 9),
+      p('Reggie Miller', 1, 1, 2),
+      p('CJ McCollum', 1, 1, 2),
+      p('Kemba Walker', 1, 2, 1),
+      p('Derrick Rose', 1, 1, 0),
+      p('Tony Parker', 1, 1, 0),
+      p('Manu Ginobili', 1, 0, 0),
+      p('Marc Gasol', 1, 0, 0),
+      p('Marcus Smart', 1, 0, 0),
+      p('Rudy Gobert', 1, 0, 0),
+      p('Brandon Ingram', 1, 0, 0),
+      p('Chet Holmgren', 1, 0, 0),
+      p('DeMar DeRozan', 1, 2, 0),
+      p('George Gervin', 1, 9, 0),
+      p('Pete Maravich', 1, 9, 0),
+      p('Dominique Wilkins', 1, 11, 0),
+      p('Bernard King', 0, 5, 0),
+      p('Bob McAdoo', 0, 4, 0),
+      p('Ray Allen', 0, 1, 4),
+      p('Buddy Hield', 0, 0, 6),
+      p('Eric Gordon', 0, 1, 2),
+      p('Duncan Robinson', 0, 0, 2),
+      p('Malik Beasley', 0, 0, 2),
+      p('Kyle Korver', 0, 0, 1),
+      p('JJ Redick', 0, 0, 1),
+      p('Anfernee Simons', 0, 0, 1),
+      p('Desmond Bane', 0, 0, 1),
+      p('Lauri Markkanen', 0, 0, 1),
+      p('Keegan Murray', 0, 0, 1),
+    ];
+
+    /* ------------------------------------------------------------------ */
+    /* Utilities                                                           */
+    /* ------------------------------------------------------------------ */
+    const norm = (s) =>
+      String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, '').trim();
+
+    const findPlayer = (name) => PLAYERS.find((pl) => norm(pl.name) === norm(name));
+
+    const todayKey = () => new Date().toISOString().slice(0, 10);
+
+    const hashStr = (s) => {
+      let h = 7;
+      for (let i = 0; i < s.length; i++) h = ((h * 31) + s.charCodeAt(i)) % 1000003;
+      return h;
+    };
+    const dailyCategoryIdx = () => hashStr(todayKey()) % CATEGORIES.length;
+
+    const throwEmoji = (h) => {
+      if (h.bust) return '❌';
+      if (h.value >= 100) return '🔥';
+      if (h.value >= 50) return '🏀';
+      if (h.value >= 25) return '🎯';
+      if (h.value >= 10) return '🟧';
+      if (h.value >= 1) return '🟠';
+      return '🧱';
+    };
+
+    const makePlayer = (name) => ({ name, score: START_SCORE, lives: MAX_LIVES, history: [] });
+
+    const freshState = (names) => ({
+      players: names.map(makePlayer),
+      turn: 0,
+      used: [],
+      status: 'playing', // 'playing' | 'over'
+      winner: null,      // player index on win, null = solo loss (or unfinished)
+      perfect: false,
+    });
+
+    const loadDaily = () => {
+      try {
+        const raw = localStorage.getItem(DAILY_PREFIX + todayKey());
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        if (!data || data.v !== 1 || !data.state || !Array.isArray(data.state.players)) return null;
+        return data;
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const saveDaily = (catIdx, state) => {
+      try {
+        localStorage.setItem(DAILY_PREFIX + todayKey(), JSON.stringify({ v: 1, catIdx, state }));
+      } catch (e) { /* storage unavailable — daily just won't persist */ }
+    };
+
+    const copyToClipboard = (text) => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+      }
+      return new Promise((resolve, reject) => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          resolve();
+        } catch (err) {
+          reject(err);
+        } finally {
+          document.body.removeChild(ta);
+        }
+      });
+    };
+
+    const buildShareText = ({ mode, cat, state }) => {
+      const lines = [`🏀 HOOP DARTS — ${cat.name}`];
+      if (mode === 'daily') lines.push(`📅 Daily Challenge · ${todayKey()}`);
+      state.players.forEach((pl, i) => {
+        const grid = pl.history.map(throwEmoji).join('') || '⬜';
+        let tail = '';
+        if (state.status === 'over') {
+          if (state.winner === i) tail = state.perfect ? ' 💯🏆' : ' 🏆';
+          else if (state.players.length === 1) tail = ' 💀';
+        }
+        const label = state.players.length > 1 ? `${pl.name}: ` : '';
+        lines.push(`${label}${grid}${tail}`);
+        lines.push(`${label ? '   ' : ''}${pl.history.length} throws · finished at ${pl.score}`);
+      });
+      if (state.perfect) lines.push('PERFECT CHECKOUT — exactly zero! 🎯');
+      lines.push('Play Hoop Darts: 501 → 0, NBA style.');
+      return lines.join('\n');
+    };
+
+    /* ------------------------------------------------------------------ */
+    /* Confetti                                                            */
+    /* ------------------------------------------------------------------ */
+    const CONFETTI_COLORS = ['#F97316', '#FDBA74', '#22D3EE', '#FACC15', '#F8FAFC', '#34D399'];
+
+    function Confetti() {
+      const pieces = useMemo(
+        () =>
+          Array.from({ length: 90 }, (_, i) => ({
+            id: i,
+            left: Math.random() * 100,
+            delay: Math.random() * 2.2,
+            dur: 2.6 + Math.random() * 2.4,
+            size: 6 + Math.random() * 9,
+            color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+            round: Math.random() > 0.5,
+          })),
+        []
+      );
+      return (
+        <div className="pointer-events-none fixed inset-0 z-[70] overflow-hidden" aria-hidden="true">
+          {pieces.map((c) => (
+            <div
+              key={c.id}
+              className="absolute top-0"
+              style={{
+                left: c.left + '%',
+                width: c.size + 'px',
+                height: c.size * (c.round ? 1 : 0.45) + 'px',
+                backgroundColor: c.color,
+                borderRadius: c.round ? '9999px' : '2px',
+                animation: `confetti ${c.dur}s linear ${c.delay}s infinite`,
+              }}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Court / Hoop visualizer — progress ring + ball arcing to the rim    */
+    /* ------------------------------------------------------------------ */
+    function CourtVisualizer({ score, bustTick, inCheckoutRange, won }) {
+      const progress = Math.min(1, Math.max(0, (START_SCORE - score) / START_SCORE));
+      const R = 110;
+      const C = 2 * Math.PI * R;
+      const dashOffset = C * (1 - progress);
+
+      // Quadratic bezier flight path: bottom-left launch → rim
+      const P0 = { x: 52, y: 192 };
+      const P1 = { x: -10, y: 96 };
+      const P2 = { x: 120, y: 66 };
+      const t = won ? 1 : progress;
+      const bx = (1 - t) * (1 - t) * P0.x + 2 * (1 - t) * t * P1.x + t * t * P2.x;
+      const by = (1 - t) * (1 - t) * P0.y + 2 * (1 - t) * t * P1.y + t * t * P2.y;
+
+      const nearZone = inCheckoutRange && !won;
+
+      return (
+        <div className="relative mx-auto w-full max-w-[340px]">
+          <svg viewBox="0 0 240 240" className="w-full select-none" role="img" aria-label={'Score remaining: ' + score}>
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#F97316" />
+                <stop offset="60%" stopColor="#FDBA74" />
+                <stop offset="100%" stopColor="#22D3EE" />
+              </linearGradient>
+              <radialGradient id="ballGrad" cx="35%" cy="30%" r="80%">
+                <stop offset="0%" stopColor="#FB923C" />
+                <stop offset="70%" stopColor="#EA580C" />
+                <stop offset="100%" stopColor="#9A3412" />
+              </radialGradient>
+            </defs>
+
+            {/* Track ring */}
+            <circle cx="120" cy="120" r={R} fill="none" stroke="#1B2130" strokeWidth="9" />
+
+            {/* Progress ring */}
+            <g transform="rotate(-90 120 120)">
+              <circle
+                cx="120" cy="120" r={R}
+                fill="none"
+                stroke="url(#ringGrad)"
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeDasharray={C}
+                strokeDashoffset={dashOffset}
+                className={'ring-progress' + (nearZone ? ' animate-glowPulse' : '')}
+              />
+            </g>
+
+            {/* Backboard */}
+            <rect x="90" y="26" width="60" height="40" rx="4" fill="#11151F" stroke="#3A4358" strokeWidth="2" />
+            <rect x="106" y="42" width="28" height="20" rx="2" fill="none" stroke="#3A4358" strokeWidth="2" />
+
+            {/* Rim + net */}
+            <ellipse cx="120" cy="70" rx="21" ry="5.5" fill="none" stroke={won ? '#34D399' : '#F97316'} strokeWidth="3.5" />
+            <path d="M101 73 L108 96 M139 73 L132 96 M110 72.5 L114 96 M130 72.5 L126 96 M108 96 Q120 102 132 96"
+                  fill="none" stroke="#46506A" strokeWidth="1.4" strokeLinecap="round" />
+
+            {/* Basketball travelling along the arc */}
+            <g className="ball-travel" style={{ transform: `translate(${bx}px, ${by}px)` }}>
+              <circle r="11" fill="url(#ballGrad)" stroke="#7C2D12" strokeWidth="1.5" />
+              <path d="M-11 0 H11 M0 -11 V11 M-7.8 -7.8 Q0 -2 7.8 -7.8 M-7.8 7.8 Q0 2 7.8 7.8"
+                    fill="none" stroke="#7C2D12" strokeWidth="1.3" />
+            </g>
+
+            {/* Score readout */}
+            <text x="120" y="158" textAnchor="middle" className="font-score tabular"
+                  fontSize="58" fill={won ? '#34D399' : '#F8FAFC'} style={{ letterSpacing: '2px' }}>
+              {score}
+            </text>
+            <text x="120" y="178" textAnchor="middle" fontSize="9.5" fill="#64748B"
+                  style={{ letterSpacing: '3px', fontWeight: 700 }}>
+              {won ? 'CHECKED OUT' : 'REMAINING'}
+            </text>
+            {nearZone && (
+              <text x="120" y="196" textAnchor="middle" fontSize="9" fill="#FDBA74"
+                    style={{ letterSpacing: '2px', fontWeight: 700 }}>
+                CHECKOUT RANGE — FINISH IT
+              </text>
+            )}
+          </svg>
+
+          {/* Bust flash overlay */}
+          {bustTick > 0 && (
+            <div key={bustTick}
+                 className="animate-bustFlash pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-red-600/40">
+              <span className="font-score text-6xl tracking-widest text-red-100 drop-shadow-lg">BUST!</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Category card                                                       */
+    /* ------------------------------------------------------------------ */
+    function CategoryCard({ cat, mode }) {
+      return (
+        <div className="relative overflow-hidden rounded-2xl border border-line bg-panel p-4 shadow-inner2 sm:p-5">
+          <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-court/10 blur-2xl" />
+          <div className="flex items-start gap-3 sm:items-center">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-court/15 text-2xl">
+              {cat.emoji}
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-court-glow">
+                  {mode === 'daily' ? "Today's Category" : 'Active Category'}
+                </p>
+                <span className="rounded-full border border-line bg-panel2 px-2 py-0.5 text-[10px] font-semibold text-slate-400">
+                  single-throw cap: {THROW_CAP}
+                </span>
+              </div>
+              <h2 className="font-score text-2xl tracking-wide text-white sm:text-3xl">{cat.name}</h2>
+              <p className="mt-1 text-xs leading-relaxed text-slate-400 sm:text-sm">{cat.desc}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Lives meter                                                         */
+    /* ------------------------------------------------------------------ */
+    function LivesMeter({ lives }) {
+      return (
+        <div className="flex items-center gap-1" title={lives + ' lives remaining'}>
+          {Array.from({ length: MAX_LIVES }, (_, i) => (
+            <span key={i} className={'text-sm transition-all ' + (i < lives ? 'opacity-100' : 'opacity-20 grayscale')}>
+              🏀
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Per-player scoreboard panel                                         */
+    /* ------------------------------------------------------------------ */
+    function PlayerPanel({ player, active, duel, isWinner, gameOver }) {
+      const thrown = player.history.filter((h) => !h.bust);
+      const avg = thrown.length ? Math.round(thrown.reduce((a, h) => a + h.value, 0) / thrown.length) : 0;
+      return (
+        <div className={
+          'relative flex-1 rounded-2xl border p-3 transition-all sm:p-4 ' +
+          (active && !gameOver
+            ? 'border-court/60 bg-panel2 shadow-glow'
+            : 'border-line bg-panel opacity-90')
+        }>
+          {active && !gameOver && duel && (
+            <span className="absolute -top-2.5 left-3 rounded-full bg-court px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-ink">
+              On the line
+            </span>
+          )}
+          {gameOver && isWinner && (
+            <span className="absolute -top-2.5 left-3 flex items-center gap-1 rounded-full bg-emerald-400 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-ink">
+              <Crown size={11} /> Winner
+            </span>
+          )}
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-xs font-bold uppercase tracking-wider text-slate-400">{player.name}</p>
+            <LivesMeter lives={player.lives} />
+          </div>
+          <p className={'font-score tabular text-5xl leading-none tracking-wide sm:text-6xl ' +
+            (player.score <= 0 ? 'text-emerald-400' : active && !gameOver ? 'text-white' : 'text-slate-300')}>
+            {player.score}
+          </p>
+          <div className="mt-1.5 flex items-center gap-3 text-[11px] text-slate-500">
+            <span className="tabular">{player.history.length} throws</span>
+            <span className="tabular">avg {avg}</span>
+            {player.score > 0 && player.score <= THROW_CAP && (
+              <span className="font-semibold text-court-glow">checkout live</span>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Autocomplete search                                                 */
+    /* ------------------------------------------------------------------ */
+    function PlayerSearch({ onGuess, used, disabled, placeholder }) {
+      const [q, setQ] = useState('');
+      const [hi, setHi] = useState(0);
+      const [focus, setFocus] = useState(false);
+      const [shake, setShake] = useState(0);
+      const inputRef = useRef(null);
+
+      const sugg = useMemo(() => {
+        const nq = norm(q);
+        if (!nq) return [];
+        const starts = [];
+        const contains = [];
+        for (const pl of PLAYERS) {
+          const n = norm(pl.name);
+          if (n.startsWith(nq)) starts.push(pl);
+          else if (n.includes(nq)) contains.push(pl);
+        }
+        return [...starts, ...contains].slice(0, 8);
+      }, [q]);
+
+      useEffect(() => { setHi(0); }, [q]);
+
+      const fire = (name) => {
+        const ok = onGuess(name);
+        if (ok) {
+          setQ('');
+          if (inputRef.current) inputRef.current.focus();
+        } else {
+          setShake((s) => s + 1);
+        }
+      };
+
+      const submit = () => {
+        if (disabled || !q.trim()) return;
+        const exact = findPlayer(q);
+        if (exact) return fire(exact.name);
+        const pick = sugg[hi] || sugg[0];
+        if (pick) return fire(pick.name);
+        fire(q.trim()); // lets the parent produce a "not in database" message
+      };
+
+      const onKeyDown = (e) => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); setHi((h) => Math.min(h + 1, Math.max(sugg.length - 1, 0))); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setHi((h) => Math.max(h - 1, 0)); }
+        else if (e.key === 'Enter') { e.preventDefault(); submit(); }
+        else if (e.key === 'Escape') { setFocus(false); }
+      };
+
+      return (
+        <div key={shake} className={'relative ' + (shake ? 'animate-shakeX' : '')}>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={q}
+                disabled={disabled}
+                onChange={(e) => setQ(e.target.value)}
+                onFocus={() => setFocus(true)}
+                onBlur={() => setTimeout(() => setFocus(false), 120)}
+                onKeyDown={onKeyDown}
+                placeholder={placeholder}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck="false"
+                className="w-full rounded-xl border border-line bg-panel2 py-3 pl-10 pr-3 text-sm font-medium text-white placeholder-slate-500 outline-none transition focus:border-court/70 focus:ring-2 focus:ring-court/30 disabled:opacity-40"
+                aria-label="Type an NBA player's name"
+              />
+            </div>
+            <button
+              onClick={submit}
+              disabled={disabled || !q.trim()}
+              className="flex items-center gap-1.5 rounded-xl bg-court px-4 py-3 text-sm font-extrabold uppercase tracking-wider text-ink transition hover:bg-court-glow active:scale-95 disabled:opacity-30 disabled:hover:bg-court"
+            >
+              <Target size={16} /> Throw
+            </button>
+          </div>
+
+          {focus && sugg.length > 0 && !disabled && (
+            <ul className="absolute z-30 mt-2 w-full overflow-hidden rounded-xl border border-line bg-panel2 shadow-2xl shadow-black/50">
+              {sugg.map((pl, i) => {
+                const isUsed = used.includes(pl.name);
+                return (
+                  <li key={pl.name}>
+                    <button
+                      onMouseDown={(e) => { e.preventDefault(); fire(pl.name); }}
+                      onMouseEnter={() => setHi(i)}
+                      className={
+                        'flex w-full items-center justify-between px-4 py-2.5 text-left text-sm transition ' +
+                        (i === hi ? 'bg-court/15 text-white' : 'text-slate-300') +
+                        (isUsed ? ' opacity-40' : '')
+                      }
+                    >
+                      <span className={isUsed ? 'line-through' : ''}>{pl.name}</span>
+                      {isUsed
+                        ? <span className="text-[10px] font-bold uppercase tracking-widest text-red-400">used</span>
+                        : i === hi && <ChevronRight size={14} className="text-court" />}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Throw history                                                       */
+    /* ------------------------------------------------------------------ */
+    function HistoryList({ players, duel, catShort }) {
+      const rows = [];
+      players.forEach((pl, pi) => {
+        pl.history.forEach((h, hi) => rows.push({ ...h, by: pl.name, byIdx: pi, seq: hi, key: pi + '-' + hi }));
+      });
+      // Interleave in true chronological order: sort by per-player sequence, then player index
+      rows.sort((a, b) => (a.seq - b.seq) || (a.byIdx - b.byIdx));
+      rows.reverse();
+
+      if (rows.length === 0) {
+        return (
+          <div className="rounded-xl border border-dashed border-line bg-panel/50 px-4 py-6 text-center text-xs text-slate-500">
+            No throws yet — name an NBA player to open the scoring.
+          </div>
+        );
+      }
+      return (
+        <ul className="max-h-64 space-y-1.5 overflow-y-auto pr-1 lg:max-h-80">
+          {rows.map((h, idx) => (
+            <li key={h.key}
+                className={'flex items-center gap-2.5 rounded-lg border px-3 py-2 text-xs sm:text-sm ' +
+                  (idx === 0 ? 'animate-throwIn ' : '') +
+                  (h.bust ? 'border-red-900/60 bg-red-950/30' : 'border-line bg-panel2/60')}>
+              <span className="text-base leading-none">{throwEmoji(h)}</span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-slate-200">
+                  {duel && <span className="mr-1.5 rounded bg-line px-1.5 py-0.5 text-[10px] font-bold text-slate-400">{h.by}</span>}
+                  {h.name}
+                </p>
+                <p className="truncate text-[11px] text-slate-500">
+                  {h.bust
+                    ? `would have gone below ${CHECKOUT_MIN} — score reset, life lost`
+                    : `−${h.value} ${catShort}` + (h.raw > THROW_CAP ? ` (capped from ${h.raw})` : '')}
+                </p>
+              </div>
+              <span className={'tabular shrink-0 font-score text-lg tracking-wide ' + (h.bust ? 'text-red-400' : 'text-court-glow')}>
+                {h.bust ? 'BUST' : '→ ' + h.scoreAfter}
+              </span>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* End-of-game modal                                                   */
+    /* ------------------------------------------------------------------ */
+    function StatBox({ label, value, accent }) {
+      return (
+        <div className="rounded-xl border border-line bg-panel2 p-3 text-center">
+          <p className={'font-score tabular text-3xl tracking-wide ' + (accent ? 'text-court-glow' : 'text-white')}>{value}</p>
+          <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</p>
+        </div>
+      );
+    }
+
+    function EndModal({ mode, cat, state, onReplay, onExit }) {
+      const [copied, setCopied] = useState(false);
+      const duel = state.players.length > 1;
+      const won = state.winner !== null;
+      const hero = state.players[won ? state.winner : 0];
+      const finishedAt = hero.score;
+      const checkedOut = won && finishedAt <= 0; // duel wins can also come from the opponent busting out
+      const loserName = duel && won ? state.players[state.winner === 0 ? 1 : 0].name : null;
+
+      const totalTurns = hero.history.length;
+      const best = hero.history.reduce((m, h) => (h.bust ? m : Math.max(m, h.value)), 0);
+      const busts = hero.history.filter((h) => h.bust).length;
+      const accuracy = checkedOut
+        ? (state.perfect ? 100 : Math.max(0, Math.round(((10 - Math.abs(finishedAt)) / 10) * 100)))
+        : 0;
+
+      const share = () => {
+        copyToClipboard(buildShareText({ mode, cat, state }))
+          .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2200); })
+          .catch(() => { setCopied(false); });
+      };
+
+      return (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/85 p-4 backdrop-blur-sm">
+          {won && <Confetti />}
+          <div className="animate-pop relative w-full max-w-md rounded-3xl border border-line bg-panel p-6 shadow-2xl shadow-black/60">
+            <div className="text-center">
+              <div className={'mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-3xl ' +
+                (won ? 'bg-court/15' : 'bg-red-500/10')}>
+                {won ? (state.perfect ? '💯' : '🏆') : '💀'}
+              </div>
+              <h2 className="mt-3 font-score text-4xl tracking-wide text-white">
+                {won
+                  ? state.perfect ? 'PERFECT CHECKOUT!' : (duel ? `${hero.name.toUpperCase()} WINS!` : 'CHECKED OUT!')
+                  : 'GAME OVER'}
+              </h2>
+              <p className="mt-1 text-sm text-slate-400">
+                {won
+                  ? state.perfect
+                    ? 'Exactly zero. Nothing but net. 🎯'
+                    : checkedOut
+                      ? `Landed at ${finishedAt} — inside the checkout zone (0 to ${CHECKOUT_MIN}).`
+                      : `${loserName} busted out of lives — ${hero.name} takes the match.`
+                  : 'Out of lives. The rim said no.'}
+                {mode === 'daily' && <span className="mt-1 block text-xs text-slate-500">New daily challenge drops tomorrow.</span>}
+              </p>
+
+              {state.perfect && (
+                <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-court/50 bg-court/10 px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-court-glow">
+                  <Award size={13} /> Perfect Checkout Badge
+                </span>
+              )}
+            </div>
+
+            <p className="mb-2 mt-5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+              {duel ? `${hero.name} — Stats for the Match` : 'Stats for the Match'}
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <StatBox label="Turns" value={totalTurns} />
+              <StatBox label="Best Throw" value={best} accent />
+              <StatBox label="Busts" value={busts} />
+              <StatBox label="Checkout" value={checkedOut ? accuracy + '%' : '—'} accent={checkedOut} />
+            </div>
+
+            {duel && (
+              <div className="mt-3 space-y-1.5 rounded-xl border border-line bg-panel2/60 p-3">
+                {state.players.map((pl, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs">
+                    <span className={'font-semibold ' + (state.winner === i ? 'text-court-glow' : 'text-slate-400')}>
+                      {state.winner === i ? '👑 ' : ''}{pl.name}
+                    </span>
+                    <span className="tabular text-slate-400">{pl.history.length} throws · finished at {pl.score}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-3 rounded-xl border border-line bg-panel2/60 p-3">
+              {state.players.map((pl, i) => (
+                <p key={i} className="truncate text-center text-lg leading-relaxed tracking-wider">
+                  {pl.history.map(throwEmoji).join('')}{state.winner === i ? (state.perfect ? '💯' : '🏆') : ''}
+                </p>
+              ))}
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <button onClick={share}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-court px-4 py-3 text-sm font-extrabold uppercase tracking-wider text-ink transition hover:bg-court-glow active:scale-95">
+                {copied ? <Check size={16} /> : <Share2 size={16} />}
+                {copied ? 'Copied!' : 'Share Results'}
+              </button>
+              {mode !== 'daily' && (
+                <button onClick={onReplay}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-line bg-panel2 px-4 py-3 text-sm font-extrabold uppercase tracking-wider text-slate-200 transition hover:border-court/50 active:scale-95">
+                  <RotateCcw size={16} /> Run It Back
+                </button>
+              )}
+              <button onClick={onExit}
+                      className="flex items-center justify-center gap-2 rounded-xl border border-line bg-panel2 px-4 py-3 text-sm font-extrabold uppercase tracking-wider text-slate-400 transition hover:text-white active:scale-95">
+                <ArrowLeft size={16} /> Menu
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Game screen                                                         */
+    /* ------------------------------------------------------------------ */
+    function Game({ config, onExit }) {
+      const cat = CATEGORIES[config.catIdx];
+      const [state, setState] = useState(() => config.saved || freshState(config.names));
+      const [msg, setMsg] = useState(null);            // {t:'err'|'bust'|'good'|'info', text}
+      const [lastThrow, setLastThrow] = useState(null); // {id, value, bust}
+      const [bustTick, setBustTick] = useState(0);
+
+      const duel = state.players.length > 1;
+      const cur = state.players[state.turn];
+      const gameOver = state.status === 'over';
+
+      // Daily challenge anti-cheat persistence: every state change is written
+      // immediately, so refreshing after a bust restores the busted state.
+      useEffect(() => {
+        if (config.mode === 'daily') saveDaily(config.catIdx, state);
+      }, [state, config.mode, config.catIdx]);
+
+      const guess = useCallback((rawName) => {
+        if (state.status !== 'playing') return false;
+        const player = findPlayer(rawName);
+        if (!player) {
+          setMsg({ t: 'err', text: `“${rawName}” isn't in the database — pick a name from the suggestions.` });
+          return false;
+        }
+        if (state.used.includes(player.name)) {
+          setMsg({ t: 'err', text: `${player.name} has already been thrown this game.` });
+          return false;
+        }
+
+        const i = state.turn;
+        const me = state.players[i];
+        const raw = player.stats[cat.key] || 0;
+        const value = Math.min(raw, THROW_CAP);
+        const newScore = me.score - value;
+        const bust = newScore < CHECKOUT_MIN;
+
+        const players = state.players.map((pl) => ({ ...pl, history: [...pl.history] }));
+        let status = 'playing';
+        let winner = state.winner;
+        let perfect = state.perfect;
+
+        if (bust) {
+          players[i].lives -= 1;
+          players[i].history.push({ name: player.name, value, raw, bust: true, scoreAfter: me.score });
+          if (players[i].lives <= 0) {
+            status = 'over';
+            winner = duel ? (i === 0 ? 1 : 0) : null;
+          }
+          setBustTick((b) => b + 1);
+          setMsg({
+            t: 'bust',
+            text: `BUST! ${player.name} (−${value}) blows past ${CHECKOUT_MIN}. Score resets to ${me.score} — ${players[i].lives} ${players[i].lives === 1 ? 'life' : 'lives'} left.`,
+          });
+        } else {
+          players[i].score = newScore;
+          players[i].history.push({ name: player.name, value, raw, bust: false, scoreAfter: newScore });
+          if (newScore <= 0) {
+            status = 'over';
+            winner = i;
+            perfect = newScore === 0;
+            setMsg(null);
+          } else if (value === 0) {
+            setMsg({ t: 'info', text: `${player.name} scores a brick — 0 ${cat.short}. Throw burned.` });
+          } else if (raw > THROW_CAP) {
+            setMsg({ t: 'good', text: `${player.name}: ${raw} ${cat.short}, capped to the maximum throw of ${THROW_CAP}!` });
+          } else if (newScore <= THROW_CAP) {
+            setMsg({ t: 'good', text: `−${value}. You're in throwing distance of the checkout zone (0 to ${CHECKOUT_MIN}).` });
+          } else {
+            setMsg({ t: 'good', text: `${player.name} drains −${value} ${cat.short}.` });
+          }
+        }
+
+        const turn = status === 'playing' && duel ? (i + 1) % players.length : i;
+        setLastThrow({ id: Date.now(), value, bust });
+        setState({ players, turn, used: [...state.used, player.name], status, winner, perfect });
+        return true;
+      }, [state, cat, duel]);
+
+      const replay = () => {
+        setState(freshState(config.names));
+        setMsg(null);
+        setLastThrow(null);
+        setBustTick(0);
+      };
+
+      const modeLabel = config.mode === 'daily' ? 'Daily Challenge' : duel ? '1 v 1 Duel' : 'Solo 501';
+      const ModeIcon = config.mode === 'daily' ? Calendar : duel ? Swords : User;
+
+      return (
+        <div className="mx-auto w-full max-w-5xl px-4 pb-10 pt-4 sm:px-6">
+          {/* Header */}
+          <header className="mb-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-court text-lg shadow-glow">🏀</span>
+              <div>
+                <h1 className="font-score text-2xl leading-none tracking-widest text-white">HOOP DARTS</h1>
+                <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                  <ModeIcon size={10} /> {modeLabel}{config.mode === 'daily' ? ' · ' + todayKey() : ''}
+                </p>
+              </div>
+            </div>
+            <button onClick={onExit}
+                    className="flex items-center gap-1.5 rounded-xl border border-line bg-panel px-3 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 transition hover:text-white">
+              <ArrowLeft size={14} /> <span className="hidden sm:inline">Menu</span>
+            </button>
+          </header>
+
+          <CategoryCard cat={cat} mode={config.mode} />
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+            {/* Left: visualizer */}
+            <section className="relative rounded-2xl border border-line bg-panel p-4 shadow-inner2 sm:p-6">
+              <CourtVisualizer
+                score={cur.score}
+                bustTick={bustTick}
+                inCheckoutRange={cur.score > 0 && cur.score <= THROW_CAP}
+                won={gameOver && state.winner !== null && state.players[state.winner] === cur}
+              />
+              {lastThrow && !gameOver && (
+                <div key={lastThrow.id}
+                     className="animate-riseFade pointer-events-none absolute left-1/2 top-3 -translate-x-1/2">
+                  <span className={'font-score text-3xl tracking-widest ' + (lastThrow.bust ? 'text-red-400' : 'text-court-glow')}>
+                    {lastThrow.bust ? 'BUST' : '−' + lastThrow.value}
+                  </span>
+                </div>
+              )}
+              <p className="mt-2 text-center text-[11px] text-slate-500">
+                501 → land on <span className="font-bold text-slate-300">0</span> for a perfect checkout, or anywhere in
+                <span className="font-bold text-slate-300"> 0 to {CHECKOUT_MIN}</span> to win. Below {CHECKOUT_MIN} is a bust.
+              </p>
+            </section>
+
+            {/* Right: scoreboard + input + history */}
+            <section className="flex flex-col gap-4">
+              <div className={'flex gap-3 ' + (duel ? 'flex-col sm:flex-row' : '')}>
+                {state.players.map((pl, i) => (
+                  <PlayerPanel
+                    key={i}
+                    player={pl}
+                    duel={duel}
+                    active={i === state.turn}
+                    gameOver={gameOver}
+                    isWinner={state.winner === i}
+                  />
+                ))}
+              </div>
+
+              <div>
+                {duel && !gameOver && (
+                  <p className="mb-1.5 text-[11px] font-bold uppercase tracking-widest text-court-glow">
+                    {cur.name} — your throw
+                  </p>
+                )}
+                <PlayerSearch
+                  onGuess={guess}
+                  used={state.used}
+                  disabled={gameOver}
+                  placeholder={'Throw an NBA player… (max −' + THROW_CAP + ')'}
+                />
+                {msg && (
+                  <p className={
+                    'mt-2 flex items-start gap-1.5 text-xs leading-relaxed ' +
+                    (msg.t === 'err' ? 'text-red-400' : msg.t === 'bust' ? 'text-red-300' : msg.t === 'good' ? 'text-emerald-300' : 'text-amber-300')
+                  }>
+                    <Info size={13} className="mt-0.5 shrink-0" /> <span>{msg.text}</span>
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <p className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                  <History size={11} /> Previous Throws
+                </p>
+                <HistoryList players={state.players} duel={duel} catShort={cat.short} />
+              </div>
+            </section>
+          </div>
+
+          {gameOver && (
+            <EndModal mode={config.mode} cat={cat} state={state} onReplay={replay} onExit={onExit} />
+          )}
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Menu screen                                                         */
+    /* ------------------------------------------------------------------ */
+    function ModeButton({ active, onClick, icon: IconCmp, title, sub }) {
+      return (
+        <button onClick={onClick}
+                className={'flex-1 rounded-2xl border p-4 text-left transition active:scale-[0.98] ' +
+                  (active ? 'border-court/70 bg-court/10 shadow-glow' : 'border-line bg-panel hover:border-slate-600')}>
+          <IconCmp size={20} className={active ? 'text-court-glow' : 'text-slate-400'} />
+          <p className="mt-2 font-score text-xl tracking-wide text-white">{title}</p>
+          <p className="text-[11px] leading-snug text-slate-500">{sub}</p>
+        </button>
+      );
+    }
+
+    function Menu({ onStart }) {
+      const [mode, setMode] = useState('solo');           // 'solo' | 'duel' | 'daily'
+      const [catChoice, setCatChoice] = useState(0);       // 0..2 or 'random'
+      const [names, setNames] = useState(['Player 1', 'Player 2']);
+      const [showRules, setShowRules] = useState(false);
+
+      const dailyIdx = dailyCategoryIdx();
+      const dailySaved = loadDaily();
+      const dailyDone = dailySaved && dailySaved.state.status === 'over';
+      const dailyInProgress = dailySaved && dailySaved.state.status === 'playing';
+
+      const start = () => {
+        if (mode === 'daily') {
+          onStart({
+            mode: 'daily',
+            catIdx: dailySaved ? dailySaved.catIdx : dailyIdx,
+            names: ['You'],
+            saved: dailySaved ? dailySaved.state : null,
+          });
+          return;
+        }
+        const catIdx = catChoice === 'random' ? Math.floor(Math.random() * CATEGORIES.length) : catChoice;
+        onStart({
+          mode,
+          catIdx,
+          names: mode === 'duel'
+            ? names.map((n, i) => n.trim() || 'Player ' + (i + 1))
+            : ['You'],
+          saved: null,
+        });
+      };
+
+      return (
+        <div className="mx-auto w-full max-w-3xl px-4 pb-12 pt-10 sm:px-6 sm:pt-14">
+          {/* Hero */}
+          <div className="text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-court text-3xl shadow-glow">🏀</div>
+            <h1 className="mt-4 font-score text-6xl tracking-[0.12em] text-white sm:text-7xl">HOOP DARTS</h1>
+            <p className="mx-auto mt-1 max-w-md text-sm text-slate-400">
+              <span className="font-bold text-court-glow">501</span> on the board. Throw NBA players — their career
+              stats are your darts. Check out in the zone (<span className="text-slate-200">0 to −10</span>) to win.
+            </p>
+            <button onClick={() => setShowRules((s) => !s)}
+                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-court-glow">
+              <HelpCircle size={13} /> {showRules ? 'Hide rules' : 'How to play'}
+            </button>
+          </div>
+
+          {showRules && (
+            <div className="animate-pop mt-4 rounded-2xl border border-line bg-panel p-4 text-xs leading-relaxed text-slate-400 sm:p-5 sm:text-sm">
+              <ul className="list-inside space-y-1.5">
+                <li>🎯 You start at <b className="text-white">501</b>. Each turn, name an NBA player — their career stat in the active category is subtracted from your score.</li>
+                <li>🧮 A single throw is capped at <b className="text-white">180</b>, just like a perfect dart visit.</li>
+                <li>🏆 Land on <b className="text-emerald-300">exactly 0</b> for a <b className="text-court-glow">Perfect Checkout</b>, or anywhere from <b className="text-white">0 down to −10</b> to win.</li>
+                <li>💥 Dropping <b className="text-red-300">below −10</b> is a <b className="text-red-300">BUST</b>: your score resets to where the turn started and you lose one of your <b className="text-white">3 lives</b>. Lose all three and it's game over.</li>
+                <li>🧱 A player with <b className="text-white">0</b> in the category still burns your throw — choose wisely.</li>
+                <li>🔁 Each player can only be thrown <b className="text-white">once per game</b>.</li>
+                <li>⚔️ In 1v1, you and a friend alternate throws on separate boards — first to check out (or survive the other's bust-out) wins.</li>
+              </ul>
+              <p className="mt-3 text-[10px] text-slate-600">Stat values are close approximations, tuned for gameplay.</p>
+            </div>
+          )}
+
+          {/* Mode select */}
+          <p className="mb-2 mt-8 text-[10px] font-bold uppercase tracking-[0.25em] text-slate-500">Game Mode</p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <ModeButton active={mode === 'solo'} onClick={() => setMode('solo')} icon={User}
+                        title="SOLO 501" sub="Classic countdown. You vs. the board." />
+            <ModeButton active={mode === 'duel'} onClick={() => setMode('duel')} icon={Swords}
+                        title="1 V 1 DUEL" sub="Alternate throws with a friend. First checkout wins." />
+            <ModeButton active={mode === 'daily'} onClick={() => setMode('daily')} icon={Calendar}
+                        title="DAILY CHALLENGE"
+                        sub={dailyDone ? 'Today: completed ✓ — view your result' : dailyInProgress ? 'Today: in progress — resume' : 'One board a day. No do-overs.'} />
+          </div>
+
+          {/* Duel names */}
+          {mode === 'duel' && (
+            <div className="animate-pop mt-4 grid gap-3 sm:grid-cols-2">
+              {names.map((n, i) => (
+                <div key={i}>
+                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.25em] text-slate-500">
+                    Player {i + 1} name
+                  </label>
+                  <input
+                    value={n}
+                    maxLength={18}
+                    onChange={(e) => setNames((prev) => prev.map((x, xi) => (xi === i ? e.target.value : x)))}
+                    className="w-full rounded-xl border border-line bg-panel2 px-3.5 py-2.5 text-sm font-medium text-white outline-none transition focus:border-court/70 focus:ring-2 focus:ring-court/30"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Category select */}
+          {mode !== 'daily' ? (
+            <div>
+              <p className="mb-2 mt-6 text-[10px] font-bold uppercase tracking-[0.25em] text-slate-500">Stat Category</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {CATEGORIES.map((c, i) => (
+                  <button key={c.id} onClick={() => setCatChoice(i)}
+                          className={'rounded-2xl border p-4 text-left transition active:scale-[0.98] ' +
+                            (catChoice === i ? 'border-court/70 bg-court/10 shadow-glow' : 'border-line bg-panel hover:border-slate-600')}>
+                    <span className="text-xl">{c.emoji}</span>
+                    <p className="mt-1.5 font-score text-lg leading-tight tracking-wide text-white">{c.name}</p>
+                    <p className="mt-1 text-[11px] leading-snug text-slate-500">{c.desc}</p>
+                  </button>
+                ))}
+                <button onClick={() => setCatChoice('random')}
+                        className={'flex flex-col items-start justify-center rounded-2xl border p-4 text-left transition active:scale-[0.98] ' +
+                          (catChoice === 'random' ? 'border-neon/70 bg-neon/10' : 'border-line bg-panel hover:border-slate-600')}>
+                  <Shuffle size={20} className={catChoice === 'random' ? 'text-neon' : 'text-slate-400'} />
+                  <p className="mt-1.5 font-score text-lg tracking-wide text-white">RANDOM CATEGORY</p>
+                  <p className="mt-1 text-[11px] leading-snug text-slate-500">Spin the wheel — the board picks for you at tip-off.</p>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="animate-pop mt-6 rounded-2xl border border-line bg-panel p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-500">Today's locked category</p>
+              <p className="mt-1 font-score text-2xl tracking-wide text-white">
+                {CATEGORIES[dailySaved ? dailySaved.catIdx : dailyIdx].emoji}{' '}
+                {CATEGORIES[dailySaved ? dailySaved.catIdx : dailyIdx].name}
+              </p>
+              <p className="mt-1 text-[11px] text-slate-500">
+                One attempt per day. Your board is saved after every throw — refreshing won't undo a bust. 😉
+              </p>
+            </div>
+          )}
+
+          {/* Start */}
+          <button onClick={start}
+                  className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-court py-4 font-score text-2xl tracking-[0.2em] text-ink shadow-glow transition hover:bg-court-glow active:scale-[0.98]">
+            <Zap size={20} />
+            {mode === 'daily' ? (dailyDone ? 'VIEW TODAY\'S RESULT' : dailyInProgress ? 'RESUME DAILY BOARD' : 'TIP OFF TODAY\'S BOARD') : 'TIP OFF'}
+          </button>
+
+          <p className="mt-6 text-center text-[10px] text-slate-600">
+            {PLAYERS.length} players in the database · 3 stat categories · darts rules, basketball soul
+          </p>
+        </div>
+      );
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* App root                                                            */
+    /* ------------------------------------------------------------------ */
+    function App() {
+      const [config, setConfig] = useState(null);
+      return (
+        <div className="min-h-screen">
+          {config
+            ? <Game key={config.mode + '-' + config.catIdx + '-' + Date.now()} config={config} onExit={() => setConfig(null)} />
+            : <Menu onStart={setConfig} />}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
