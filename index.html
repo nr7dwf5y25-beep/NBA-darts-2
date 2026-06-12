@@ -144,167 +144,381 @@
 
     const CATEGORIES = [
       {
-        id: 'td',
-        key: 'td',
-        name: 'Career Triple-Doubles',
+        id: 'td', key: 'td', emoji: '📊',
+        name: 'All-Time Regular Season Triple-Doubles',
         short: 'Triple-Doubles',
-        emoji: '📊',
-        desc: 'Regular-season career triple-doubles. Westbrook (203) and Big O (181) are haymakers — but the checkout zone belongs to glue guys with 1 or 2.',
+        desc: 'Career regular-season triple-doubles. Westbrook (203) and Big O (181) are haymakers — the checkout zone belongs to glue guys with 1 or 2.',
       },
       {
-        id: 'fifty',
-        key: 'fifty',
+        id: 'fifty', key: 'fifty', emoji: '🔥',
         name: 'Career 50-Point Games',
         short: '50-Point Games',
-        emoji: '🔥',
-        desc: 'Regular-season games with 50+ points. Wilt sits at a monstrous 118 (capped to 180 rules still apply) — one-night wonders are your finishing darts.',
+        desc: 'Regular-season games with 50+ points. Wilt sits at a monstrous 118 — one-night wonders are your finishing darts.',
       },
       {
-        id: 'threes',
-        key: 'threes',
+        id: 'threes', key: 'threes', emoji: '🎯',
         name: 'Career Seasons with 200+ Three-Pointers',
         short: '200+ 3PT Seasons',
-        emoji: '🎯',
-        desc: 'Seasons with 200 or more made threes. Splash brothers stack these up — most big men throw a brick (0) here, which burns the throw.',
+        desc: 'Seasons with 200 or more made threes. Splash brothers stack these up — most big men throw a brick (0), which burns the throw.',
+      },
+      {
+        id: 'pog', key: 'pog', emoji: '🎬',
+        name: 'All-Time Playoff Games Played',
+        short: 'Playoff Games',
+        desc: 'Career playoff appearances. LeBron (292) and ring-chasing role players like Derek Fisher and Robert Horry tower here — young stars barely register.',
+      },
+      {
+        id: 'tech', key: 'tech', emoji: '🟥',
+        name: 'All-Time Regular Season Technical Fouls',
+        short: 'Technical Fouls',
+        desc: 'Career technicals. Sheed (317), the Mailman and Barkley blow past the cap — choirboys like Mike Conley (1) are surgical checkout darts.',
+      },
+      {
+        id: 's3', key: 's3', emoji: '🌧️',
+        name: 'Highest Single-Season 3-Pointers Made',
+        short: 'Best 3PM Season',
+        desc: "Each player's best single-season made-threes total. Curry's 402 smashes the 180 cap — old-school bigs throw bricks.",
+      },
+      {
+        id: 'f40', key: 'f40', emoji: '💥',
+        name: 'All-Time 40+ Point Regular Season Games',
+        short: '40-Point Games',
+        desc: 'Career regular-season 40-point games. Wilt (271) and MJ (173) cap out at 180 — secondary stars land the soft finishing blows.',
+      },
+      {
+        id: 'p3', key: 'p3', emoji: '☔',
+        name: 'All-Time Career Playoff 3-Pointers Made',
+        short: 'Playoff 3PM',
+        desc: 'Career playoff threes. Deep-run shooters — Curry, Klay, Ray Allen — rain numbers here; one-series wonders are your small darts.',
+      },
+      {
+        id: 'dd', key: 'dd', emoji: '🧮',
+        name: 'All-Time Career Double-Doubles',
+        short: 'Double-Doubles',
+        desc: 'Career regular-season double-doubles. Nearly every legendary big caps at 180 — pick guards and wings carefully to land the zone.',
+      },
+      {
+        id: 'p30', key: 'p30', emoji: '🌟',
+        name: 'All-Time 30-Point Playoff Games',
+        short: '30-Pt Playoff Games',
+        desc: 'Career playoff games with 30+ points. LeBron (137) and MJ (109) headline — role players with one big night are perfect finishers.',
+      },
+      {
+        id: 'gm', key: 'gm', emoji: '🩼',
+        name: 'Career Regular Season Games Missed',
+        short: 'Games Missed',
+        desc: 'Approximate career games missed for prominent stars — the availability metric. Bill Walton (680) and Grant Hill loom large; iron men like A.C. Green (3) barely missed a beat.',
       },
     ];
 
     /* ------------------------------------------------------------------ */
-    /* Player database (stat values are close approximations, tuned for   */
-    /* gameplay — td: triple-doubles, fifty: 50-pt games, threes: 200+ 3PT */
-    /* seasons)                                                            */
+    /* Player database                                                     */
+    /*                                                                     */
+    /* Two tiers:                                                          */
+    /*  1. CURATED — stars & legends with stat values across the 11        */
+    /*     categories (close approximations, tuned for gameplay).          */
+    /*  2. EXTRA_NAMES — a deep pool of iconic players from every era so   */
+    /*     autocomplete recognizes 1000+ names. Players outside the        */
+    /*     curated core count as 0 ("no tracked value") in any category.   */
+    /*                                                                     */
+    /* Stat keys: td=triple-doubles, fifty=50-pt games, threes=200+ 3PM    */
+    /* seasons, pog=playoff games, tech=technical fouls, s3=best single-   */
+    /* season 3PM, f40=40-pt games, p3=playoff 3PM, dd=double-doubles,     */
+    /* p30=30-pt playoff games, gm=games missed (tracked for selected      */
+    /* stars only).                                                        */
     /* ------------------------------------------------------------------ */
-    const p = (name, td, fifty, threes) => ({ name, stats: { td, fifty, threes } });
+    const C = (name, stats) => ({ name, stats });
 
-    const PLAYERS = [
-      p('Russell Westbrook', 203, 5, 0),
-      p('Oscar Robertson', 181, 3, 0),
-      p('Nikola Jokic', 167, 5, 0),
-      p('Magic Johnson', 138, 0, 0),
-      p('LeBron James', 122, 15, 0),
-      p('Jason Kidd', 107, 0, 0),
-      p('Luka Doncic', 85, 13, 1),
-      p('James Harden', 82, 23, 7),
-      p('Wilt Chamberlain', 78, 118, 0),
-      p('Domantas Sabonis', 64, 0, 0),
-      p('Larry Bird', 59, 4, 0),
-      p('Giannis Antetokounmpo', 57, 7, 0),
-      p('Fat Lever', 43, 0, 0),
-      p('Draymond Green', 42, 0, 0),
-      p('Ben Simmons', 34, 0, 0),
-      p('Bob Cousy', 33, 0, 0),
-      p('Rajon Rondo', 32, 0, 0),
-      p('John Havlicek', 30, 1, 0),
-      p('Grant Hill', 29, 0, 0),
-      p('Michael Jordan', 28, 31, 0),
-      p('Clyde Drexler', 25, 1, 0),
-      p('Kevin Durant', 24, 9, 0),
-      p('Chris Paul', 23, 0, 0),
-      p('Kareem Abdul-Jabbar', 21, 10, 0),
-      p('Kobe Bryant', 21, 25, 0),
-      p('Charles Barkley', 20, 3, 0),
-      p('Scottie Pippen', 17, 0, 0),
-      p('Kyle Lowry', 17, 0, 1),
-      p('Kevin Garnett', 17, 0, 0),
-      p('Walt Frazier', 17, 1, 0),
-      p('Hakeem Olajuwon', 16, 1, 0),
-      p('David Robinson', 14, 3, 0),
-      p('Trae Young', 14, 2, 2),
-      p('Tyrese Haliburton', 14, 0, 1),
-      p('Julius Erving', 13, 3, 0),
-      p('Penny Hardaway', 13, 1, 0),
-      p('Cade Cunningham', 13, 0, 0),
-      p('Dejounte Murray', 13, 0, 0),
-      p('Lamar Odom', 12, 0, 0),
-      p('Josh Giddey', 12, 0, 0),
-      p('Tim Duncan', 11, 1, 0),
-      p('Stephen Curry', 11, 14, 12),
-      p('Elfrid Payton', 11, 0, 0),
-      p('Ja Morant', 10, 1, 0),
-      p('LaMelo Ball', 10, 0, 1),
-      p('DeMarcus Cousins', 8, 2, 0),
-      p('Evan Turner', 8, 0, 0),
-      p('Bam Adebayo', 7, 0, 0),
-      p('Joakim Noah', 7, 0, 0),
-      p('Nikola Vucevic', 7, 0, 0),
-      p('Jimmy Butler', 7, 1, 0),
-      p('Shaquille O\'Neal', 6, 5, 0),
-      p('Gary Payton', 6, 0, 0),
-      p('Karl Malone', 6, 2, 0),
-      p('Andre Drummond', 6, 0, 0),
-      p('Andre Iguodala', 6, 0, 0),
-      p('Boris Diaw', 6, 0, 0),
-      p('Shai Gilgeous-Alexander', 6, 4, 0),
-      p('Devin Booker', 6, 8, 0),
-      p('Dwyane Wade', 5, 1, 0),
-      p('John Stockton', 5, 0, 0),
-      p('Jrue Holiday', 5, 0, 0),
-      p('Rick Barry', 5, 14, 0),
-      p('Steve Nash', 4, 0, 0),
-      p('Pau Gasol', 4, 0, 0),
-      p('Dwight Howard', 4, 0, 0),
-      p('Anthony Davis', 4, 3, 0),
-      p('Paul George', 4, 1, 3),
-      p('Victor Wembanyama', 4, 1, 0),
-      p('Jayson Tatum', 4, 4, 2),
-      p('Tracy McGrady', 4, 4, 0),
-      p('Al Horford', 4, 0, 0),
-      p('Elgin Baylor', 4, 17, 0),
-      p('Allen Iverson', 3, 11, 0),
-      p('Dirk Nowitzki', 3, 5, 0),
-      p('Damian Lillard', 3, 16, 7),
-      p('De\'Aaron Fox', 3, 1, 0),
-      p('D\'Angelo Russell', 3, 1, 1),
-      p('Kyrie Irving', 3, 4, 1),
-      p('Patrick Ewing', 3, 1, 0),
-      p('Vince Carter', 3, 2, 0),
-      p('Jalen Brunson', 2, 3, 0),
-      p('Jamal Murray', 2, 2, 0),
-      p('Paolo Banchero', 2, 0, 0),
-      p('Pascal Siakam', 2, 1, 0),
-      p('Donovan Mitchell', 2, 5, 3),
-      p('Carmelo Anthony', 2, 6, 0),
-      p('Kawhi Leonard', 2, 0, 0),
-      p('Joel Embiid', 2, 7, 0),
-      p('Anthony Edwards', 2, 2, 1),
-      p('Bradley Beal', 2, 4, 1),
-      p('Zach LaVine', 1, 1, 3),
-      p('Klay Thompson', 1, 3, 9),
-      p('Reggie Miller', 1, 1, 2),
-      p('CJ McCollum', 1, 1, 2),
-      p('Kemba Walker', 1, 2, 1),
-      p('Derrick Rose', 1, 1, 0),
-      p('Tony Parker', 1, 1, 0),
-      p('Manu Ginobili', 1, 0, 0),
-      p('Marc Gasol', 1, 0, 0),
-      p('Marcus Smart', 1, 0, 0),
-      p('Rudy Gobert', 1, 0, 0),
-      p('Brandon Ingram', 1, 0, 0),
-      p('Chet Holmgren', 1, 0, 0),
-      p('DeMar DeRozan', 1, 2, 0),
-      p('George Gervin', 1, 9, 0),
-      p('Pete Maravich', 1, 9, 0),
-      p('Dominique Wilkins', 1, 11, 0),
-      p('Bernard King', 0, 5, 0),
-      p('Bob McAdoo', 0, 4, 0),
-      p('Ray Allen', 0, 1, 4),
-      p('Buddy Hield', 0, 0, 6),
-      p('Eric Gordon', 0, 1, 2),
-      p('Duncan Robinson', 0, 0, 2),
-      p('Malik Beasley', 0, 0, 2),
-      p('Kyle Korver', 0, 0, 1),
-      p('JJ Redick', 0, 0, 1),
-      p('Anfernee Simons', 0, 0, 1),
-      p('Desmond Bane', 0, 0, 1),
-      p('Lauri Markkanen', 0, 0, 1),
-      p('Keegan Murray', 0, 0, 1),
+    const CURATED = [
+      C('Russell Westbrook', { td: 203, fifty: 5, threes: 1, s3: 200, f40: 28, pog: 115, tech: 115, p3: 150, dd: 560, p30: 25 }),
+      C('Oscar Robertson', { td: 181, fifty: 3, f40: 55, pog: 86, dd: 680, p30: 27 }),
+      C('Nikola Jokic', { td: 167, fifty: 5, pog: 81, tech: 75, s3: 112, f40: 22, p3: 130, dd: 600, p30: 38 }),
+      C('Magic Johnson', { td: 138, pog: 190, dd: 530, p30: 32, f40: 8 }),
+      C('LeBron James', { td: 122, fifty: 15, f40: 78, pog: 292, tech: 85, s3: 149, p3: 484, dd: 620, p30: 137 }),
+      C('Jason Kidd', { td: 107, pog: 158, dd: 530, s3: 145, p3: 220, tech: 60, p30: 5 }),
+      C('Luka Doncic', { td: 85, fifty: 13, threes: 1, s3: 284, f40: 55, pog: 66, tech: 80, p3: 160, dd: 320, p30: 42 }),
+      C('James Harden', { td: 82, fifty: 23, threes: 7, s3: 378, f40: 105, pog: 160, tech: 125, p3: 440, dd: 350, p30: 52 }),
+      C('Wilt Chamberlain', { td: 78, fifty: 118, f40: 271, pog: 160, dd: 968, p30: 38 }),
+      C('Domantas Sabonis', { td: 64, dd: 470, pog: 27, tech: 40, f40: 1 }),
+      C('Larry Bird', { td: 59, fifty: 4, f40: 47, pog: 164, tech: 55, s3: 98, p3: 80, dd: 510, p30: 34 }),
+      C('Giannis Antetokounmpo', { td: 57, fifty: 7, f40: 52, pog: 88, tech: 55, s3: 66, dd: 560, p30: 48, p3: 55, gm: 120 }),
+      C('Fat Lever', { td: 43, dd: 230, pog: 47 }),
+      C('Draymond Green', { td: 42, pog: 166, tech: 170, dd: 240, p3: 190, s3: 55, p30: 1 }),
+      C('Ben Simmons', { td: 34, gm: 280, pog: 34, dd: 230, tech: 35, s3: 2 }),
+      C('Bob Cousy', { td: 33, pog: 109, dd: 400 }),
+      C('Rajon Rondo', { td: 32, pog: 134, dd: 300, tech: 55, p30: 2, p3: 75, s3: 33 }),
+      C('John Havlicek', { td: 30, fifty: 1, pog: 172, dd: 280, p30: 22, f40: 13 }),
+      C('Grant Hill', { td: 29, gm: 510, pog: 38, dd: 260, f40: 4, tech: 30 }),
+      C('Michael Jordan', { td: 28, fifty: 31, f40: 173, pog: 179, tech: 50, s3: 111, p3: 148, dd: 230, p30: 109 }),
+      C('Clyde Drexler', { td: 25, fifty: 1, pog: 145, f40: 20, dd: 350, p30: 22, p3: 130 }),
+      C('Kevin Durant', { td: 24, fifty: 9, f40: 76, pog: 166, tech: 145, s3: 192, p3: 340, dd: 310, p30: 87, gm: 210 }),
+      C('Chris Paul', { td: 23, pog: 149, tech: 105, s3: 165, p3: 245, dd: 500, p30: 10, f40: 4 }),
+      C('Kareem Abdul-Jabbar', { td: 21, fifty: 10, f40: 72, pog: 237, dd: 833, p30: 75, s3: 1 }),
+      C('Kobe Bryant', { td: 21, fifty: 25, f40: 122, pog: 220, tech: 100, s3: 148, p3: 292, dd: 200, p30: 88 }),
+      C('Charles Barkley', { td: 20, fifty: 3, f40: 24, pog: 123, tech: 329, dd: 690, p30: 28, p3: 95 }),
+      C('Scottie Pippen', { td: 17, pog: 208, tech: 85, p3: 195, dd: 240, p30: 8, f40: 3 }),
+      C('Kyle Lowry', { td: 17, threes: 1, pog: 138, tech: 90, s3: 188, p3: 240, dd: 190, p30: 4, f40: 2 }),
+      C('Kevin Garnett', { td: 17, pog: 143, tech: 170, dd: 740, p30: 12, f40: 4, p3: 14 }),
+      C('Walt Frazier', { td: 17, fifty: 1, pog: 93, dd: 280, p30: 14 }),
+      C('Hakeem Olajuwon', { td: 16, fifty: 1, f40: 20, pog: 145, dd: 770, p30: 50, tech: 80, p3: 5 }),
+      C('David Robinson', { td: 14, fifty: 3, f40: 28, pog: 123, dd: 590, p30: 14 }),
+      C('Trae Young', { td: 14, fifty: 2, threes: 2, s3: 233, f40: 20, pog: 16, tech: 65, p3: 65, dd: 220, p30: 8 }),
+      C('Tyrese Haliburton', { td: 14, threes: 1, s3: 225, pog: 38, dd: 120, p30: 4, tech: 5, f40: 3, p3: 85 }),
+      C('Julius Erving', { td: 13, fifty: 3, f40: 28, pog: 141, dd: 380, p30: 32 }),
+      C('Penny Hardaway', { td: 13, fifty: 1, pog: 58, gm: 310, dd: 140, p30: 10, f40: 5 }),
+      C('Cade Cunningham', { td: 13, f40: 7, s3: 125, pog: 6, dd: 85, tech: 22, p30: 1 }),
+      C('Dejounte Murray', { td: 13, s3: 140, pog: 18, dd: 150, tech: 20 }),
+      C('Lamar Odom', { td: 12, pog: 92, dd: 230, tech: 35 }),
+      C('Josh Giddey', { td: 12, pog: 16, dd: 130, s3: 95 }),
+      C('John Wall', { td: 12, gm: 350, pog: 33, dd: 120, tech: 36, s3: 95 }),
+      C('Tim Duncan', { td: 11, fifty: 1, pog: 251, tech: 75, dd: 841, p30: 48, f40: 6, s3: 10, p3: 14 }),
+      C('Stephen Curry', { td: 11, fifty: 14, threes: 12, s3: 402, f40: 58, pog: 168, tech: 32, p3: 730, dd: 125, p30: 58 }),
+      C('Elfrid Payton', { td: 11, dd: 110, pog: 4 }),
+      C('Ja Morant', { td: 10, fifty: 1, f40: 11, pog: 13, gm: 140, s3: 115, dd: 85, tech: 28, p30: 4 }),
+      C('LaMelo Ball', { td: 10, threes: 1, s3: 220, gm: 170, dd: 100, tech: 26, f40: 6 }),
+      C('Isiah Thomas', { td: 9, pog: 111, dd: 200, p30: 12, tech: 55, p3: 35 }),
+      C('DeMarcus Cousins', { td: 8, fifty: 2, tech: 140, dd: 400, pog: 11, f40: 9 }),
+      C('Evan Turner', { td: 8, pog: 48, dd: 75 }),
+      C('Alperen Sengun', { td: 7, dd: 210, pog: 7, tech: 18 }),
+      C('Bam Adebayo', { td: 7, pog: 88, dd: 340, tech: 22, p30: 3, f40: 1, s3: 7, p3: 3 }),
+      C('Joakim Noah', { td: 7, dd: 320, pog: 48, tech: 45 }),
+      C('Nikola Vucevic', { td: 7, dd: 470, pog: 15, s3: 110, f40: 2, tech: 22 }),
+      C('Jimmy Butler', { td: 7, fifty: 1, pog: 128, p30: 24, dd: 210, tech: 45, f40: 9, p3: 110 }),
+      C('Dennis Rodman', { td: 6, pog: 169, tech: 212, dd: 510 }),
+      C("Shaquille O'Neal", { td: 6, fifty: 5, f40: 49, pog: 216, tech: 195, dd: 727, p30: 72, s3: 1 }),
+      C('Gary Payton', { td: 6, pog: 95, tech: 250, dd: 250, p30: 8 }),
+      C('Karl Malone', { td: 6, fifty: 2, f40: 31, pog: 193, tech: 332, dd: 811, p30: 42, gm: 10, p3: 2 }),
+      C('Andre Drummond', { td: 6, dd: 550, pog: 28, tech: 55, f40: 1, p3: 2 }),
+      C('Andre Iguodala', { td: 6, pog: 177, p3: 150, dd: 95, tech: 35, s3: 85 }),
+      C('Boris Diaw', { td: 6, pog: 105, dd: 75 }),
+      C('Vlade Divac', { td: 6, dd: 460, pog: 118, tech: 75, p3: 8 }),
+      C('Shai Gilgeous-Alexander', { td: 6, fifty: 4, f40: 30, pog: 40, s3: 110, tech: 18, dd: 65, p30: 22, p3: 60 }),
+      C('Devin Booker', { td: 6, fifty: 8, f40: 38, pog: 58, tech: 70, s3: 174, p3: 125, dd: 85, p30: 19 }),
+      C('Dwyane Wade', { td: 5, fifty: 1, f40: 28, pog: 177, tech: 90, dd: 330, p30: 42, p3: 75, gm: 160 }),
+      C('John Stockton', { td: 5, pog: 182, dd: 710, tech: 65, gm: 22, p30: 2, p3: 100 }),
+      C('Jrue Holiday', { td: 5, pog: 108, p3: 170, dd: 150, tech: 28, s3: 135 }),
+      C('Rick Barry', { td: 5, fifty: 14, f40: 46, pog: 74, p30: 27, dd: 280 }),
+      C('Chris Webber', { td: 5, dd: 440, pog: 78, p30: 10, tech: 85, f40: 4 }),
+      C('Karl-Anthony Towns', { td: 5, fifty: 2, gm: 150, dd: 430, pog: 38, s3: 155, p3: 105, tech: 55, p30: 8, f40: 8 }),
+      C('Baron Davis', { td: 5, pog: 48, p3: 125, dd: 120, tech: 60 }),
+      C('Dave Cowens', { td: 5, dd: 460, pog: 86 }),
+      C('Steve Nash', { td: 4, pog: 120, dd: 270, s3: 179, p3: 140, tech: 27, p30: 5 }),
+      C('Pau Gasol', { td: 4, pog: 136, dd: 660, p30: 10, tech: 45, s3: 8 }),
+      C('Dwight Howard', { td: 4, pog: 125, tech: 175, dd: 771, p30: 8, f40: 1, s3: 6 }),
+      C('Anthony Davis', { td: 4, fifty: 3, f40: 20, pog: 68, dd: 470, p30: 21, gm: 280, tech: 50 }),
+      C('Paul George', { td: 4, fifty: 1, threes: 3, s3: 292, pog: 108, p3: 270, dd: 125, p30: 18, tech: 55, f40: 10, gm: 240 }),
+      C('Victor Wembanyama', { td: 4, fifty: 1, gm: 75, dd: 115, s3: 130, tech: 12, f40: 5 }),
+      C('Jayson Tatum', { td: 4, fifty: 4, threes: 2, s3: 245, f40: 26, pog: 115, p3: 350, dd: 210, p30: 43, tech: 36 }),
+      C('Tracy McGrady', { td: 4, fifty: 4, f40: 36, pog: 52, gm: 250, dd: 160, p30: 12, s3: 175 }),
+      C('Al Horford', { td: 4, pog: 184, dd: 310, p3: 170, tech: 22, p30: 1 }),
+      C('Elgin Baylor', { td: 4, fifty: 17, f40: 84, pog: 134, dd: 530, p30: 38 }),
+      C('Anthony Mason', { td: 4, tech: 95, pog: 48, dd: 190 }),
+      C('Bill Walton', { td: 4, gm: 680, pog: 47, dd: 210 }),
+      C('Blake Griffin', { td: 4, fifty: 1, gm: 210, pog: 68, dd: 370, p30: 10, f40: 7, tech: 55 }),
+      C('Julius Randle', { td: 3, fifty: 1, dd: 410, pog: 28, f40: 6, tech: 55, s3: 155 }),
+      C('Allen Iverson', { td: 3, fifty: 11, f40: 58, pog: 71, tech: 85, dd: 95, p30: 33, p3: 85 }),
+      C('Dirk Nowitzki', { td: 3, fifty: 5, f40: 33, pog: 145, dd: 530, p30: 51, p3: 170, s3: 150, tech: 35 }),
+      C('Damian Lillard', { td: 3, fifty: 16, threes: 7, s3: 275, f40: 54, pog: 61, p3: 225, dd: 105, p30: 24, tech: 22 }),
+      C("De'Aaron Fox", { td: 3, fifty: 1, f40: 13, s3: 185, pog: 11, dd: 65, tech: 32, p30: 3 }),
+      C("D'Angelo Russell", { td: 3, fifty: 1, threes: 1, s3: 230, pog: 33, p3: 85, dd: 85, tech: 36 }),
+      C('Kyrie Irving', { td: 3, fifty: 4, threes: 1, s3: 200, f40: 23, pog: 88, p3: 270, dd: 55, p30: 26, gm: 260, tech: 27 }),
+      C('Patrick Ewing', { td: 3, fifty: 1, pog: 139, dd: 570, tech: 75, p30: 18, f40: 5, p3: 4 }),
+      C('Vince Carter', { td: 3, fifty: 2, f40: 24, pog: 86, s3: 172, p3: 185, dd: 210, p30: 12, tech: 55 }),
+      C('Tim Hardaway', { td: 3, pog: 68, s3: 165, p3: 155, dd: 110, f40: 6 }),
+      C('Toni Kukoc', { td: 3, pog: 100, dd: 55 }),
+      C('Mookie Blaylock', { td: 3, threes: 1, s3: 220, pog: 58 }),
+      C('Kevin Love', { td: 3, gm: 270, pog: 92, p3: 225, dd: 470, p30: 6, f40: 4, s3: 145 }),
+      C('Jalen Brunson', { td: 2, fifty: 3, f40: 11, pog: 72, p30: 20, dd: 35, s3: 155, tech: 10, p3: 105 }),
+      C('Jamal Murray', { td: 2, fifty: 2, pog: 78, p30: 14, p3: 155, dd: 45, s3: 148, gm: 170, tech: 15 }),
+      C('Paolo Banchero', { td: 2, pog: 12, s3: 105, dd: 75, f40: 4, tech: 18 }),
+      C('Pascal Siakam', { td: 2, fifty: 1, pog: 98, dd: 210, p30: 8, p3: 85, tech: 18 }),
+      C('Donovan Mitchell', { td: 2, fifty: 5, threes: 3, s3: 245, f40: 28, pog: 68, p30: 28, p3: 195, dd: 45, tech: 27 }),
+      C('Carmelo Anthony', { td: 2, fifty: 6, f40: 48, pog: 77, dd: 320, p30: 19, p3: 125, s3: 185, tech: 75 }),
+      C('Kawhi Leonard', { td: 2, pog: 138, f40: 11, dd: 170, p30: 28, p3: 220, gm: 340, tech: 18, s3: 115 }),
+      C('Joel Embiid', { td: 2, fifty: 7, f40: 33, pog: 58, gm: 430, dd: 350, p30: 19, tech: 65, s3: 85 }),
+      C('Anthony Edwards', { td: 2, fifty: 2, threes: 1, s3: 320, f40: 14, pog: 44, p30: 14, p3: 125, dd: 45, tech: 36 }),
+      C('Bradley Beal', { td: 2, fifty: 4, threes: 1, s3: 200, f40: 16, pog: 28, gm: 210, dd: 35, tech: 26, p3: 45, p30: 6 }),
+      C('Khris Middleton', { td: 2, fifty: 1, pog: 98, p3: 195, s3: 155, dd: 55, p30: 8 }),
+      C('Shawn Kemp', { td: 2, pog: 76, dd: 460, tech: 95, p30: 10, p3: 9 }),
+      C('Evan Mobley', { td: 2, dd: 240, pog: 23 }),
+      C('Derrick Coleman', { td: 2, dd: 330, pog: 42, tech: 75 }),
+      C('Zach LaVine', { td: 1, fifty: 1, threes: 3, s3: 225, f40: 11, pog: 5, dd: 25, tech: 18 }),
+      C('Klay Thompson', { td: 1, fifty: 3, threes: 9, s3: 301, pog: 158, p3: 480, f40: 13, dd: 25, p30: 16, tech: 26, gm: 245 }),
+      C('Reggie Miller', { td: 1, fifty: 1, threes: 2, s3: 229, pog: 144, p3: 320, dd: 55, p30: 23, tech: 85, f40: 8 }),
+      C('CJ McCollum', { td: 1, fifty: 1, threes: 2, s3: 207, pog: 68, p3: 165, dd: 25, p30: 12, tech: 15 }),
+      C('Kemba Walker', { td: 1, fifty: 2, threes: 1, s3: 226, f40: 11, pog: 14, dd: 25, tech: 12 }),
+      C('Derrick Rose', { td: 1, fifty: 1, gm: 400, pog: 48, f40: 9, dd: 55, p30: 10, tech: 16 }),
+      C('Tony Parker', { td: 1, fifty: 1, pog: 226, p30: 15, dd: 95, tech: 20, p3: 100 }),
+      C('Manu Ginobili', { td: 1, pog: 218, p3: 320, p30: 6, dd: 55, tech: 45 }),
+      C('Marc Gasol', { td: 1, pog: 92, dd: 280, tech: 45, s3: 85 }),
+      C('Marcus Smart', { td: 1, pog: 108, tech: 70, p3: 175, dd: 25, s3: 125 }),
+      C('Rudy Gobert', { td: 1, pog: 78, dd: 530, tech: 32, s3: 1 }),
+      C('Brandon Ingram', { td: 1, gm: 190, s3: 105, pog: 9, dd: 55, f40: 4, tech: 17 }),
+      C('Chet Holmgren', { td: 1, pog: 33, dd: 85, s3: 90, tech: 8 }),
+      C('DeMar DeRozan', { td: 1, fifty: 2, f40: 13, pog: 63, dd: 85, tech: 40, p30: 8 }),
+      C('George Gervin', { td: 1, fifty: 9, f40: 56, pog: 59, p30: 20, dd: 120 }),
+      C('Pete Maravich', { td: 1, fifty: 9, f40: 38, pog: 26, dd: 95, p30: 6 }),
+      C('Dominique Wilkins', { td: 1, fifty: 11, f40: 48, pog: 56, dd: 290, p30: 18, tech: 55 }),
+      C('Jamal Crawford', { td: 1, fifty: 3, f40: 9, pog: 62, s3: 165, dd: 12 }),
+      C('Doc Rivers', { td: 1, pog: 81, dd: 60, tech: 45 }),
+      C('Bernard King', { fifty: 5, f40: 28, pog: 28, p30: 12, dd: 140 }),
+      C('Bob McAdoo', { fifty: 4, f40: 37, pog: 94, dd: 330, p30: 15 }),
+      C('Ray Allen', { fifty: 1, threes: 4, s3: 269, pog: 171, p3: 385, dd: 55, p30: 18, tech: 22, f40: 8 }),
+      C('Buddy Hield', { threes: 6, s3: 288, pog: 16, p3: 55, dd: 25 }),
+      C('Eric Gordon', { fifty: 1, threes: 2, s3: 246, pog: 68, p3: 155, dd: 4, tech: 12 }),
+      C('Duncan Robinson', { threes: 2, s3: 270, pog: 38, p3: 115, dd: 2 }),
+      C('Malik Beasley', { threes: 2, s3: 319, pog: 18, p3: 35, dd: 3 }),
+      C('Kyle Korver', { threes: 1, s3: 221, pog: 126, p3: 225, dd: 8, tech: 12 }),
+      C('JJ Redick', { threes: 1, s3: 217, pog: 110, p3: 165, dd: 2 }),
+      C('Anfernee Simons', { threes: 1, s3: 205, pog: 5, dd: 4 }),
+      C('Desmond Bane', { threes: 1, s3: 220, pog: 23, p3: 65, dd: 20 }),
+      C('Lauri Markkanen', { threes: 1, s3: 200, f40: 6, dd: 105, tech: 10 }),
+      C('Keegan Murray', { threes: 1, s3: 200, pog: 13, dd: 25 }),
+      C('Bill Russell', { pog: 165, dd: 880, p30: 6 }),
+      C('Jerry West', { fifty: 13, f40: 85, pog: 153, p30: 70, dd: 240 }),
+      C('Moses Malone', { fifty: 3, f40: 23, pog: 94, dd: 690, tech: 55, p30: 12 }),
+      C('Elvin Hayes', { fifty: 2, f40: 16, pog: 96, dd: 740, p30: 10 }),
+      C('Wes Unseld', { pog: 119, dd: 520 }),
+      C('Bob Pettit', { fifty: 4, f40: 36, pog: 88, dd: 580, p30: 18 }),
+      C('Joe Dumars', { pog: 112, p3: 75, dd: 15, p30: 8 }),
+      C('Robert Horry', { pog: 244, p3: 260, dd: 55, tech: 35 }),
+      C('Derek Fisher', { pog: 259, p3: 285, dd: 6, tech: 16 }),
+      C('Robert Parish', { pog: 184, dd: 600, tech: 65, p30: 2 }),
+      C('James Worthy', { pog: 143, p30: 14, dd: 85 }),
+      C('Kevin McHale', { fifty: 1, pog: 169, dd: 270, p30: 8 }),
+      C('Dennis Johnson', { pog: 180, dd: 120, p30: 4 }),
+      C('Adrian Dantley', { fifty: 5, f40: 42, pog: 73, dd: 210, p30: 14 }),
+      C('Alex English', { fifty: 1, f40: 28, pog: 68, dd: 170, p30: 12 }),
+      C('Chris Mullin', { fifty: 1, pog: 96, dd: 35, f40: 8 }),
+      C('Mitch Richmond', { fifty: 2, f40: 14, pog: 24, s3: 125, dd: 25 }),
+      C('Glen Rice', { fifty: 1, threes: 1, s3: 207, pog: 58, p3: 105, f40: 9 }),
+      C('Peja Stojakovic', { threes: 1, s3: 240, pog: 78, p3: 175, dd: 35 }),
+      C('Danny Green', { pog: 160, p3: 275, s3: 186, dd: 8 }),
+      C('JR Smith', { pog: 128, p3: 250, s3: 196, tech: 75 }),
+      C('Jason Terry', { pog: 132, p3: 255, s3: 175, dd: 16, tech: 35 }),
+      C('Lou Williams', { fifty: 1, f40: 6, pog: 78, s3: 145, dd: 8 }),
+      C('Mike Conley', { tech: 1, pog: 98, p3: 195, s3: 165, dd: 55 }),
+      C('Fred VanVleet', { fifty: 1, threes: 1, s3: 218, pog: 88, p3: 185, dd: 35, tech: 26 }),
+      C('Udonis Haslem', { pog: 147, dd: 120, tech: 35 }),
+      C('PJ Tucker', { pog: 112, tech: 45, p3: 85, dd: 16 }),
+      C('Patrick Beverley', { pog: 62, tech: 75, dd: 25, p3: 75 }),
+      C('Marcus Morris', { tech: 85, pog: 68, s3: 125, dd: 30 }),
+      C('Markieff Morris', { tech: 95, pog: 48, dd: 55 }),
+      C('Charles Oakley', { tech: 125, pog: 144, dd: 400, s3: 5 }),
+      C('Vernon Maxwell', { fifty: 1, tech: 128, pog: 78, p3: 125 }),
+      C('Bill Laimbeer', { tech: 115, pog: 113, dd: 460 }),
+      C('Rick Mahorn', { tech: 105, pog: 88, dd: 140 }),
+      C('Dikembe Mutombo', { pog: 94, dd: 670, tech: 95 }),
+      C('Alonzo Mourning', { pog: 95, dd: 430, tech: 105, p30: 8 }),
+      C('Detlef Schrempf', { pog: 110, dd: 210 }),
+      C('Dan Majerle', { pog: 120, p3: 175, s3: 190 }),
+      C('Jeff Hornacek', { pog: 140, p3: 145, s3: 125 }),
+      C('Mark Price', { pog: 47, p3: 75, s3: 115, dd: 65 }),
+      C('Steve Kerr', { pog: 126, p3: 95, s3: 85 }),
+      C('Horace Grant', { pog: 170, dd: 360 }),
+      C('Dennis Scott', { threes: 1, s3: 267, pog: 40, p3: 115 }),
+      C('George McCloud', { threes: 1, s3: 257, pog: 28 }),
+      C('Jason Richardson', { threes: 1, s3: 243, pog: 48, p3: 115, f40: 5 }),
+      C('Brook Lopez', { pog: 88, dd: 190, s3: 187, tech: 26, f40: 2 }),
+      C('Zion Williamson', { gm: 250, f40: 7, pog: 6, dd: 100, tech: 12 }),
+      C('Greg Oden', { gm: 390, dd: 25 }),
+      C('Sam Bowie', { gm: 310, dd: 140 }),
+      C('Brandon Roy', { gm: 210, pog: 22, f40: 4, dd: 16 }),
+      C('Yao Ming', { gm: 250, pog: 28, dd: 320, p30: 6, f40: 2, s3: 1 }),
+      C('Jonathan Isaac', { gm: 310, pog: 9 }),
+      C('Kristaps Porzingis', { gm: 280, pog: 48, dd: 140, s3: 145, f40: 4, tech: 26 }),
+      C('A.C. Green', { gm: 3, pog: 153, dd: 320 }),
+      C('Chris Bosh', { gm: 150, pog: 89, dd: 460, p30: 6, tech: 26 }),
+      C('Paul Pierce', { fifty: 1, pog: 170, p3: 275, dd: 190, p30: 28, tech: 65, f40: 10 }),
+      C('Rasheed Wallace', { tech: 317, pog: 177, dd: 240, p3: 165 }),
+      C('Ben Wallace', { dd: 440, pog: 128, tech: 85, s3: 2 }),
+      C('Chauncey Billups', { pog: 146, p3: 235, s3: 155, dd: 55, p30: 6 }),
+      C('Richard Hamilton', { pog: 115, p30: 8, dd: 16 }),
+      C('Tayshaun Prince', { pog: 142 }),
+      C('Gilbert Arenas', { fifty: 1, f40: 14, s3: 196, pog: 20 }),
+      C('Antawn Jamison', { fifty: 2, dd: 270, f40: 6 }),
+      C('Isaiah Thomas', { fifty: 1, f40: 9, threes: 1, s3: 245, pog: 28, dd: 6 }),
+      C('Jaylen Brown', { pog: 112, p3: 250, dd: 55, p30: 20, f40: 10, tech: 27, s3: 155 }),
+      C('Derrick White', { pog: 88, p3: 175, s3: 185, dd: 16 }),
+      C('Mikal Bridges', { pog: 48, s3: 145, dd: 12, gm: 1 }),
+      C('Jarrett Allen', { dd: 270, pog: 28 }),
+      C('Darius Garland', { s3: 175, pog: 18, dd: 16 }),
+      C('Scottie Barnes', { td: 4, dd: 130, pog: 6 }),
+      C('Franz Wagner', { pog: 11, dd: 35 }),
+      C('Jalen Williams', { pog: 33, dd: 35, s3: 105, p30: 3 }),
+      C('Tyrese Maxey', { fifty: 1, threes: 1, s3: 205, pog: 28, p3: 75, f40: 6 }),
+      C('DeAndre Jordan', { dd: 510, pog: 38, tech: 35 }),
+      C('Clint Capela', { dd: 310, pog: 48 }),
+      C('Hassan Whiteside', { dd: 270 }),
+      C('Tristan Thompson', { pog: 118, dd: 150 }),
+      C('Nate Thurmond', { dd: 580, pog: 78 }),
+      C('Bob Lanier', { dd: 430, pog: 64 }),
+      C('George Mikan', { dd: 280, pog: 88 }),
+      C('Dolph Schayes', { dd: 570, pog: 100 }),
+      C('Austin Reaves', { pog: 38, s3: 145, dd: 12 }),
+      C('Jaren Jackson Jr.', { pog: 33, dd: 110, tech: 48, f40: 3, s3: 110 }),
+      C('Kevin Johnson', { td: 5, pog: 105, dd: 240, p30: 12 }),
+      C('Danny Manning', { pog: 24, dd: 130 }),
+      C('Wayman Tisdale', { dd: 120 }),
+      C('Spud Webb', { pog: 51, dd: 20 }),
+      C('Kevin Willis', { pog: 84, dd: 420 }),
+      C('Steve Smith', { pog: 80, p3: 130, dd: 25 }),
+      C('Christian Laettner', { pog: 24, dd: 130 }),
+      C('Brad Daugherty', { dd: 320, pog: 41 }),
     ];
+
+    /* Name pool — recognized by autocomplete; uncurated names count as 0 */
+    const EXTRA_NAMES = (
+      "Jalen Green|Amen Thompson|Ausar Thompson|Cam Thomas|Cam Johnson|Cameron Payne|Jordan Poole|Andrew Wiggins|Aaron Gordon|Michael Porter Jr.|Bruce Brown|Kentavious Caldwell-Pope|Bones Hyland|Christian Braun|Peyton Watson|Aaron Nesmith|Andrew Nembhard|Obi Toppin|Myles Turner|Bennedict Mathurin|T.J. McConnell|RJ Barrett|Immanuel Quickley|Gradey Dick|Jakob Poeltl|OG Anunoby|Mitchell Robinson|Josh Hart|Donte DiVincenzo|Miles McBride|" +
+      "Precious Achiuwa|Isaiah Hartenstein|Cason Wallace|Luguentz Dort|Aaron Wiggins|Isaiah Joe|Kenrich Williams|Jaylin Williams|Dillon Brooks|Tari Eason|Jabari Smith Jr.|Steven Adams|Jaden Ivey|Jalen Duren|Isaiah Stewart|Marcus Sasser|Killian Hayes|Bojan Bogdanovic|Bogdan Bogdanovic|Onyeka Okongwu|Jalen Johnson|De'Andre Hunter|Saddiq Bey|Dyson Daniels|Zaccharie Risacher|Alex Sarr|Bilal Coulibaly|Kyle Kuzma|Corey Kispert|Tyus Jones|" +
+      "Tre Jones|Keldon Johnson|Devin Vassell|Jeremy Sochan|Stephon Castle|Harrison Barnes|Zach Collins|Malaki Branham|Trey Murphy III|Herbert Jones|Jose Alvarado|Jonas Valanciunas|Naji Marshall|Larry Nance Jr.|Dereck Lively II|Daniel Gafford|Josh Green|Maxi Kleber|Tim Hardaway Jr.|Dwight Powell|Quentin Grimes|Jaden Hardy|P.J. Washington|Miles Bridges|Mark Williams|Grant Williams|Brandon Miller|Tre Mann|Seth Curry|Coby White|" +
+      "Patrick Williams|Ayo Dosunmu|Dalen Terry|Torrey Craig|Goran Dragic|Sam Merrill|Georges Niang|Caris LeVert|Isaac Okoro|Dean Wade|Ty Jerome|Max Strus|Tyler Herro|Nikola Jovic|Jaime Jaquez Jr.|Caleb Martin|Cody Martin|Terry Rozier|Kel'el Ware|Haywood Highsmith|Josh Richardson|Jusuf Nurkic|Grayson Allen|Royce O'Neale|Bol Bol|Ryan Dunn|Damion Lee|Monte Morris|Aaron Holiday|Justin Holiday|" +
+      "Keon Ellis|Kevin Huerter|Trey Lyles|Davion Mitchell|Malik Monk|Chris Duarte|Sasha Vezenkov|Doug McDermott|Jeremy Lamb|Victor Oladipo|Goga Bitadze|Wendell Carter Jr.|Markelle Fultz|Cole Anthony|Gary Harris|Moritz Wagner|Anthony Black|Jett Howard|Caleb Houstan|Deni Avdija|Marvin Bagley III|Richaun Holmes|Johnny Davis|Landry Shamet|Delon Wright|Jared Butler|Jordan Clarkson|Collin Sexton|Walker Kessler|Talen Horton-Tucker|" +
+      "Kelly Olynyk|John Collins|Taylor Hendricks|Keyonte George|Ochai Agbaji|Kris Dunn|Cody Williams|Jaxson Hayes|Nickeil Alexander-Walker|Lonnie Walker IV|Bryn Forbes|Patty Mills|Davis Bertans|Kyle Anderson|Cory Joseph|Rui Hachimura|Jarred Vanderbilt|Gabe Vincent|Dalton Knecht|Max Christie|Alex Caruso|Avery Bradley|Wesley Matthews|Payton Pritchard|Sam Hauser|Luke Kornet|Robert Williams III|Jae Crowder|Tony Allen|Glen Davis|" +
+      "Spencer Dinwiddie|Dennis Schroder|Reggie Jackson|Norman Powell|Ivica Zubac|Terance Mann|Nicolas Batum|Mason Plumlee|Robert Covington|Luke Kennard|Amir Coffey|Austin Rivers|Montrezl Harrell|Serge Ibaka|Thabo Sefolosha|Kendrick Perkins|Nick Collison|Jeff Green|Enes Kanter|Dion Waiters|Andre Roberson|Jerami Grant|Hamidou Diallo|Mike Muscala|Derrick Favors|Rodney Hood|Gordon Hayward|Joe Ingles|Naz Reid|Jaden McDaniels|" +
+      "Rob Dillingham|Mo Bamba|Thanasis Antetokounmpo|Pat Connaughton|Bobby Portis|Gary Trent Jr.|Taurean Prince|Kevin Porter Jr.|Nic Claxton|Day'Ron Sharpe|Dorian Finney-Smith|Ziaire Williams|Noah Clowney|Dennis Smith Jr.|Tobias Harris|Ron Holland II|Jalen Suggs|Kelly Oubre Jr.|De'Anthony Melton|Jared McCain|Guerschon Yabusele|Paul Reed|Chris Boucher|Jevon Carter|Julian Phillips|Craig Porter Jr.|Tristan Vukcevic|Nick Smith Jr.|Jarace Walker|Ben Sheppard|" +
+      "Ousmane Dieng|Julian Strawther|Zeke Nnaji|Dario Saric|Oso Ighodaro|Deandre Ayton|Alex Len|Scoot Henderson|Shaedon Sharpe|Donovan Clingan|Toumani Camara|Matisse Thybulle|Dante Exum|Brandon Clarke|Santi Aldama|Zach Edey|Vince Williams Jr.|John Konchar|GG Jackson|Cam Whitmore|Jock Landale|Reed Sheppard|Jordan Hawkins|Yves Missi|Julian Champagnie|Blake Wesley|Jonathan Kuminga|Moses Moody|Brandin Podziemski|Trayce Jackson-Davis|" +
+      "Kevon Looney|Gary Payton II|Derrick Jones Jr.|Bronny James|Christian Wood|Cam Reddish|AJ Griffin|Justise Winslow|Kendrick Nunn|James Johnson|Meyers Leonard|Tyler Johnson|Wayne Ellington|Jahlil Okafor|Willy Hernangomez|Mario Hezonja|Dragan Bender|Marquese Chriss|Josh Jackson|Frank Ntilikina|Emmanuel Mudiay|Evan Fournier|Iman Shumpert|Tyson Chandler|Charlie Ward|Allan Houston|John Starks|Greg Anthony|Hubert Davis|Herb Williams|" +
+      "Joe Johnson|Josh Smith|Al Jefferson|Paul Millsap|Carlos Boozer|Deron Williams|Mo Williams|Anderson Varejao|Zydrunas Ilgauskas|Larry Hughes|Drew Gooden|Caron Butler|Gerald Wallace|Gerald Green|Stephen Jackson|Al Harrington|David West|Roy Hibbert|George Hill|Lance Stephenson|Tyreke Evans|DeMarre Carroll|Jeff Teague|Kent Bazemore|Kris Humphries|Andrea Bargnani|Charlie Villanueva|Jose Calderon|T.J. Ford|Jermaine O'Neal|" +
+      "Danny Granger|Mike Dunleavy Jr.|Luol Deng|Ben Gordon|Kirk Hinrich|Taj Gibson|Nate Robinson|Raymond Felton|Ty Lawson|Wilson Chandler|Danilo Gallinari|JaVale McGee|Nene|Kenneth Faried|Andre Miller|Arron Afflalo|Corey Brewer|Ricky Rubio|Nikola Pekovic|Gorgui Dieng|Ersan Ilyasova|Brandon Jennings|Michael Carter-Williams|O.J. Mayo|Eric Bledsoe|P.J. Brown|Jamaal Magloire|David Wesley|Jamal Mashburn|Eddie Jones|" +
+      "Tim Thomas|Keith Van Horn|Kerry Kittles|Richard Jefferson|Kenyon Martin|Jason Collins|Devin Harris|Marcus Camby|Stephon Marbury|Steve Francis|Cuttino Mobley|Shane Battier|Luis Scola|Aaron Brooks|Chuck Hayes|Carl Landry|Trevor Ariza|Ron Artest|Antonio McDyess|Rodney Stuckey|Greg Monroe|Brandon Knight|Jerry Stackhouse|Chucky Atkins|Cliff Robinson|Damon Stoudamire|Bonzi Wells|Zach Randolph|Theo Ratliff|Shareef Abdur-Rahim|" +
+      "Vladimir Radmanovic|Rashard Lewis|Brent Barry|Desmond Mason|Vin Baker|Sam Cassell|Michael Redd|Andrew Bogut|John Salmons|Kevin Martin|Francisco Garcia|Beno Udrih|Rudy Gay|Mike Miller|Hedo Turkoglu|Jameer Nelson|Marcin Gortat|Ryan Anderson|Channing Frye|Leandro Barbosa|Shawn Marion|Amar'e Stoudemire|Raja Bell|Quentin Richardson|Jared Dudley|Festus Ezeli|Shaun Livingston|Marreese Speights|Zaza Pachulia|David Lee|" +
+      "Jarrett Jack|Monta Ellis|Andris Biedrins|Corey Maggette|Elton Brand|Chris Kaman|Emeka Okafor|Bruce Bowen|Michael Finley|Antonio Daniels|Malik Rose|Speedy Claxton|Brian Cardinal|Eduardo Najera|Shawn Bradley|Erick Dampier|Josh Howard|DeShawn Stevenson|Brendan Haywood|Etan Thomas|Earl Boykins|Damon Jones|Mike Bibby|Doug Christie|Scot Pollard|Bobby Jackson|Brad Miller|Mehmet Okur|Andrei Kirilenko|Carlos Arroyo|" +
+      "Yi Jianlian|Omer Asik|Daniel Theis|Ish Smith|Garrett Temple|Langston Galloway|Tony Snell|Alec Burks|E'Twaun Moore|Marco Belinelli|Mirza Teletovic|CJ Miles|Jodie Meeks|Anthony Tolliver|Cody Zeller|Tyler Zeller|Miles Plumlee|Frank Kaminsky|Noah Vonleh|TJ Warren|Stanley Johnson|Anthony Bennett|Hasheem Thabeet|Adam Morrison|Michael Olowokandi|Kwame Brown|Darko Milicic|Jay Williams|Jonny Flynn|Wesley Johnson|" +
+      "Derrick Williams|Jimmer Fredette|Jan Vesely|Thomas Robinson|Wally Szczerbiak|Sam Mitchell|Randy Foye|Sebastian Telfair|Lindsey Hunter|Rex Chapman|Antoine Walker|Kenny Anderson|Eddie House|James Posey|Brian Scalabrine|Jared Sullinger|Brandon Bass|Leon Powe|Voshon Lenard|Bimbo Coles|Bobby Phills|Nick Anderson|Brian Shaw|Kenny Smith|Mario Elie|Bryon Russell|Greg Ostertag|Howard Eisley|Antoine Carr|Shandon Anderson|" +
+      "Latrell Sprewell|Chris Gatling|Rod Strickland|Juwan Howard|Calbert Cheaney|Gheorghe Muresan|Manute Bol|Muggsy Bogues|Larry Johnson|Dell Curry|Kendall Gill|Mahmoud Abdul-Rauf|LaPhonso Ellis|Antonio Davis|Dale Davis|Rik Smits|Mark Jackson|Byron Scott|Michael Cooper|Kurt Rambis|Mychal Thompson|Cedric Ceballos|Nick Van Exel|Elden Campbell|Brian Grant|Isaiah Rider|Tom Gugliotta|Terrell Brandon|Tyrone Hill|Craig Ehlo|" +
+      "Ron Harper|Scott Williams|Will Perdue|Stacey King|Jud Buechler|Randy Brown|Bill Wennington|Scott Burrell|Bison Dele|Jack Haley|Nate McMillan|Hersey Hawkins|Dale Ellis|Derrick McKey|Xavier McDaniel|Eddie Johnson|Larry Nance|Rolando Blackman|Derek Harper|Sam Perkins|Brad Davis|James Donaldson|Roy Tarpley|Kiki Vandeweghe|Hot Rod Williams|Jayson Williams|Chris Morris|Stacey Augmon|Drazen Petrovic|Sarunas Marciulionis|" +
+      "Arvydas Sabonis|World B. Free|Sidney Moncrief|Marques Johnson|Terry Cummings|Ricky Pierce|Paul Pressey|Jack Sikma|Tom Chambers|Dan Issel|Calvin Natt|Wayne Cooper|Michael Adams|Walter Davis|Maurice Cheeks|Andrew Toney|Bobby Jones|Caldwell Jones|Darryl Dawkins|Mike Gminski|Johnny Dawkins|Armen Gilliam|Buck Williams|Otis Birdsong|Albert King|Michael Ray Richardson|Bill Cartwright|Trent Tucker|Rory Sparrow|Gerald Wilkins|" +
+      "Johnny Newman|Charles Smith|Maurice Lucas|Jim Paxson|Kenny Carr|Sleepy Floyd|Purvis Short|Joe Barry Carroll|Chris Childs|Otis Thorpe|Robert Reid|Mike Newlin|Kevin Porter|Norm Van Lier|Jerry Sloan|Bob Love|Artis Gilmore|Dan Roundfield|Truck Robinson|Bobby Dandridge|Jamaal Wilkes|Norm Nixon|Swen Nater|Marvin Webster|David Thompson|James Silas|Larry Kenon|Marvin Barnes|Mel Daniels|Roger Brown|" +
+      "Mack Calvin|Earl Monroe|Dave Bing|Nate Archibald|Spencer Haywood|Connie Hawkins|Hal Greer|Billy Cunningham|Chet Walker|Willis Reed|Dave DeBusschere|Bill Bradley|Dick Barnett|Jerry Lucas|Cazzie Russell|Phil Jackson|Sam Jones|K.C. Jones|Tom Heinsohn|Bill Sharman|Frank Ramsey|Don Nelson|Bailey Howell|JoJo White|Paul Silas|Charlie Scott|Paul Westphal|Gus Williams|Fred Brown|Lonnie Shelton|" +
+      "Gail Goodrich|Happy Hairston|Zelmo Beaty|Lenny Wilkens|Richie Guerin|Lou Hudson|Walt Bellamy|Cliff Hagan|Slater Martin|Ed Macauley|Gus Johnson|Jack Marin|Archie Clark|Dick Van Arsdale|Tom Van Arsdale|Jeff Mullins|Rudy LaRusso|Rudy Tomjanovich|Calvin Murphy|Paul Arizin|Tom Gola|Guy Rodgers|Al Attles|Dino Radja|Dee Brown|Reggie Lewis|Danny Ainge|Jerry Sichting|Scott Wedman|Cedric Maxwell|" +
+      "M.L. Carr|Gerald Henderson|Quinn Buckner|Terry Porter|Jerome Kersey|Kevin Duckworth|Mark West|Danny Ferry|Steve Blake|Earl Watson|Sedale Threatt|Benoit Benjamin|Olden Polynice|Pooh Richardson|Doug West|Felton Spencer|Luc Longley|John Paxson|B.J. Armstrong|Cliff Levingston|Mark Aguirre|Orlando Woolridge|Reggie Theus|Kelly Tripucka|Lionel Hollins|Sidney Wicks|Geoff Petrie|Bob Gross|Dave Twardzik|Austin Carr|" +
+      "Bingo Smith|Campy Russell|Phil Chenier|Kevin Grevey|Mitch Kupchak|Junior Bridgeman|Brian Winters|Ernie DiGregorio|Randy Smith|Garfield Heard|John Drew|Tree Rollins|Jeremy Lin|Michael Beasley|Greivis Vasquez|Chandler Parsons|Terrence Jones|Patrick Patterson|Trey Burke|Otto Porter Jr.|Thomas Bryant|Trendon Watford|Jalen Smith|Isaiah Jackson|Bismack Biyombo|Boban Marjanovic|JaMychal Green|Javonte Green|Garrison Mathews|Jalen McDaniels|" +
+      "Vinnie Johnson|James Edwards|John Salley|Mark Eaton|Thurl Bailey|Darrell Griffith|Tyrone Corbin|Danny Schayes|Bill Hanzlik|T.R. Dunn|Chris Dudley|Rony Seikaly|Sherman Douglas|Harold Miner|Billy Owens|Lionel Simmons|Pervis Ellison|Eddy Curry|Jamaal Tinsley|Smush Parker|Sasha Vujacic|Jordan Farmar|Luke Walton|Rick Fox|Devean George|Shannon Brown|Nick Young|Matas Buzelis|Tristan da Silva|Tidjane Salaun|Bub Carrington|Kyshawn George|Devin Carter|Isaiah Collier|Ajay Mitchell|Quinten Post|Jaylen Wells|Dalano Banton|Duop Reath|Simone Fontecchio|Luka Garza|Sandro Mamukelashvili|Drew Eubanks"
+    ).split('|');
+
+    const PLAYERS = (() => {
+      const seen = new Set();
+      const out = [];
+      for (const pl of CURATED) {
+        const k = norm(pl.name);
+        if (!seen.has(k)) { seen.add(k); out.push(pl); }
+      }
+      for (const n of EXTRA_NAMES) {
+        const k = norm(n);
+        if (!k || seen.has(k)) continue;
+        seen.add(k);
+        out.push({ name: n, stats: {} });
+      }
+      return out;
+    })();
 
     /* ------------------------------------------------------------------ */
     /* Utilities                                                           */
     /* ------------------------------------------------------------------ */
-    const norm = (s) =>
-      String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, '').trim();
+    function norm(s) {
+      return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, '').trim();
+    }
 
     const findPlayer = (name) => PLAYERS.find((pl) => norm(pl.name) === norm(name));
 
@@ -763,7 +977,9 @@
                 <p className="truncate text-[11px] text-slate-500">
                   {h.bust
                     ? `would have gone below ${CHECKOUT_MIN} — score reset, life lost`
-                    : `−${h.value} ${catShort}` + (h.raw > THROW_CAP ? ` (capped from ${h.raw})` : '')}
+                    : h.value === 0
+                      ? `no tracked ${catShort} — throw burned`
+                      : `−${h.value} ${catShort}` + (h.raw > THROW_CAP ? ` (capped from ${h.raw})` : '')}
                 </p>
               </div>
               <span className={'tabular shrink-0 font-score text-lg tracking-wide ' + (h.bust ? 'text-red-400' : 'text-court-glow')}>
@@ -959,7 +1175,7 @@
             perfect = newScore === 0;
             setMsg(null);
           } else if (value === 0) {
-            setMsg({ t: 'info', text: `${player.name} scores a brick — 0 ${cat.short}. Throw burned.` });
+            setMsg({ t: 'info', text: `${player.name} has no tracked ${cat.short} — a brick. Throw burned for 0.` });
           } else if (raw > THROW_CAP) {
             setMsg({ t: 'good', text: `${player.name}: ${raw} ${cat.short}, capped to the maximum throw of ${THROW_CAP}!` });
           } else if (newScore <= THROW_CAP) {
@@ -1195,23 +1411,26 @@
           {mode !== 'daily' ? (
             <div>
               <p className="mb-2 mt-6 text-[10px] font-bold uppercase tracking-[0.25em] text-slate-500">Stat Category</p>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {CATEGORIES.map((c, i) => (
                   <button key={c.id} onClick={() => setCatChoice(i)}
-                          className={'rounded-2xl border p-4 text-left transition active:scale-[0.98] ' +
+                          className={'rounded-xl border p-3 text-left transition active:scale-[0.97] ' +
                             (catChoice === i ? 'border-court/70 bg-court/10 shadow-glow' : 'border-line bg-panel hover:border-slate-600')}>
-                    <span className="text-xl">{c.emoji}</span>
-                    <p className="mt-1.5 font-score text-lg leading-tight tracking-wide text-white">{c.name}</p>
-                    <p className="mt-1 text-[11px] leading-snug text-slate-500">{c.desc}</p>
+                    <span className="text-lg">{c.emoji}</span>
+                    <p className="mt-1 font-score text-sm leading-tight tracking-wide text-white sm:text-base">{c.short.toUpperCase()}</p>
                   </button>
                 ))}
                 <button onClick={() => setCatChoice('random')}
-                        className={'flex flex-col items-start justify-center rounded-2xl border p-4 text-left transition active:scale-[0.98] ' +
+                        className={'rounded-xl border p-3 text-left transition active:scale-[0.97] ' +
                           (catChoice === 'random' ? 'border-neon/70 bg-neon/10' : 'border-line bg-panel hover:border-slate-600')}>
-                  <Shuffle size={20} className={catChoice === 'random' ? 'text-neon' : 'text-slate-400'} />
-                  <p className="mt-1.5 font-score text-lg tracking-wide text-white">RANDOM CATEGORY</p>
-                  <p className="mt-1 text-[11px] leading-snug text-slate-500">Spin the wheel — the board picks for you at tip-off.</p>
+                  <Shuffle size={18} className={catChoice === 'random' ? 'text-neon' : 'text-slate-400'} />
+                  <p className="mt-1 font-score text-sm leading-tight tracking-wide text-white sm:text-base">RANDOM</p>
                 </button>
+              </div>
+              <div className="mt-3 rounded-xl border border-line bg-panel p-3 text-[11px] leading-relaxed text-slate-400 sm:text-xs">
+                {catChoice === 'random'
+                  ? <span><b className="text-white">Random:</b> the board picks one of the {CATEGORIES.length} categories at tip-off.</span>
+                  : <span><b className="text-white">{CATEGORIES[catChoice].name}.</b> {CATEGORIES[catChoice].desc}</span>}
               </div>
             </div>
           ) : (
@@ -1235,7 +1454,7 @@
           </button>
 
           <p className="mt-6 text-center text-[10px] text-slate-600">
-            {PLAYERS.length} players in the database · 3 stat categories · darts rules, basketball soul
+            {PLAYERS.length} players in the database · {CATEGORIES.length} stat categories · darts rules, basketball soul
           </p>
         </div>
       );
