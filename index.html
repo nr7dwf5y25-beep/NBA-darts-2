@@ -44,6 +44,9 @@
   <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
+  <!-- sql.js — SQLite compiled to WebAssembly: the game's database engine -->
+  <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.min.js"></script>
+
   <style>
     html, body { height: 100%; }
     body {
@@ -87,6 +90,127 @@
     </div>
   </noscript>
   <div id="root"></div>
+
+  <!-- Embedded copy of data/hoopdarts.sql — run `node tools/inject-data.mjs` after editing the .sql -->
+  <!-- __HOOPDARTS_SQL_START__ -->
+  <script id="hoopdarts-sql" type="text/x-sql">
+-- ---------------------------------------------------------------
+-- Hoop Darts player database (SQLite dialect)
+-- Canonical dataset for the game. index.html embeds a copy of this
+-- file and loads it into sql.js (SQLite/WASM) at startup; run
+-- `node tools/inject-data.mjs` after editing to re-embed it.
+-- Stat values are close approximations, tuned for gameplay.
+-- ---------------------------------------------------------------
+CREATE TABLE categories (
+  key  TEXT PRIMARY KEY,
+  name TEXT NOT NULL
+);
+CREATE TABLE players (
+  id          INTEGER PRIMARY KEY,
+  name        TEXT NOT NULL UNIQUE,
+  search_name TEXT NOT NULL UNIQUE
+);
+CREATE TABLE player_stats (
+  player_id INTEGER NOT NULL REFERENCES players(id),
+  category  TEXT    NOT NULL REFERENCES categories(key),
+  value     INTEGER NOT NULL,
+  PRIMARY KEY (player_id, category)
+);
+CREATE INDEX idx_players_search ON players(search_name);
+CREATE INDEX idx_stats_player   ON player_stats(player_id);
+
+INSERT INTO categories VALUES
+  ('td','All-Time Regular Season Triple-Doubles'),
+  ('fifty','Career 50-Point Games'),
+  ('pog','All-Time Playoff Games Played'),
+  ('tech','All-Time Regular Season Technical Fouls'),
+  ('s3','Highest Single-Season 3-Pointers Made'),
+  ('f40','All-Time 40+ Point Regular Season Games'),
+  ('p3','All-Time Career Playoff 3-Pointers Made'),
+  ('dd','All-Time Career Double-Doubles'),
+  ('p30','All-Time 30-Point Playoff Games'),
+  ('gm','Career Regular Season Games Missed');
+
+-- @players
+INSERT INTO players VALUES
+(1,'Russell Westbrook','russell westbrook'),(2,'Oscar Robertson','oscar robertson'),(3,'Nikola Jokic','nikola jokic'),(4,'Magic Johnson','magic johnson'),(5,'LeBron James','lebron james'),(6,'Jason Kidd','jason kidd'),(7,'Luka Doncic','luka doncic'),(8,'James Harden','james harden'),(9,'Wilt Chamberlain','wilt chamberlain'),(10,'Domantas Sabonis','domantas sabonis'),(11,'Larry Bird','larry bird'),(12,'Giannis Antetokounmpo','giannis antetokounmpo'),(13,'Fat Lever','fat lever'),(14,'Draymond Green','draymond green'),(15,'Ben Simmons','ben simmons'),(16,'Bob Cousy','bob cousy'),(17,'Rajon Rondo','rajon rondo'),(18,'John Havlicek','john havlicek'),(19,'Grant Hill','grant hill'),(20,'Michael Jordan','michael jordan'),(21,'Clyde Drexler','clyde drexler'),(22,'Kevin Durant','kevin durant'),(23,'Chris Paul','chris paul'),(24,'Kareem Abdul-Jabbar','kareem abduljabbar'),(25,'Kobe Bryant','kobe bryant'),(26,'Charles Barkley','charles barkley'),(27,'Scottie Pippen','scottie pippen'),(28,'Kyle Lowry','kyle lowry'),(29,'Kevin Garnett','kevin garnett'),(30,'Walt Frazier','walt frazier'),(31,'Hakeem Olajuwon','hakeem olajuwon'),(32,'David Robinson','david robinson'),(33,'Trae Young','trae young'),(34,'Tyrese Haliburton','tyrese haliburton'),(35,'Julius Erving','julius erving'),(36,'Penny Hardaway','penny hardaway'),(37,'Cade Cunningham','cade cunningham'),(38,'Dejounte Murray','dejounte murray'),(39,'Lamar Odom','lamar odom'),(40,'Josh Giddey','josh giddey'),(41,'John Wall','john wall'),(42,'Tim Duncan','tim duncan'),(43,'Stephen Curry','stephen curry'),(44,'Elfrid Payton','elfrid payton'),(45,'Ja Morant','ja morant'),(46,'LaMelo Ball','lamelo ball'),(47,'Isiah Thomas','isiah thomas'),(48,'DeMarcus Cousins','demarcus cousins'),(49,'Evan Turner','evan turner'),(50,'Alperen Sengun','alperen sengun');
+INSERT INTO players VALUES
+(51,'Bam Adebayo','bam adebayo'),(52,'Joakim Noah','joakim noah'),(53,'Nikola Vucevic','nikola vucevic'),(54,'Jimmy Butler','jimmy butler'),(55,'Dennis Rodman','dennis rodman'),(56,'Shaquille O''Neal','shaquille oneal'),(57,'Gary Payton','gary payton'),(58,'Karl Malone','karl malone'),(59,'Andre Drummond','andre drummond'),(60,'Andre Iguodala','andre iguodala'),(61,'Boris Diaw','boris diaw'),(62,'Vlade Divac','vlade divac'),(63,'Shai Gilgeous-Alexander','shai gilgeousalexander'),(64,'Devin Booker','devin booker'),(65,'Dwyane Wade','dwyane wade'),(66,'John Stockton','john stockton'),(67,'Jrue Holiday','jrue holiday'),(68,'Rick Barry','rick barry'),(69,'Chris Webber','chris webber'),(70,'Karl-Anthony Towns','karlanthony towns'),(71,'Baron Davis','baron davis'),(72,'Dave Cowens','dave cowens'),(73,'Steve Nash','steve nash'),(74,'Pau Gasol','pau gasol'),(75,'Dwight Howard','dwight howard'),(76,'Anthony Davis','anthony davis'),(77,'Paul George','paul george'),(78,'Victor Wembanyama','victor wembanyama'),(79,'Jayson Tatum','jayson tatum'),(80,'Tracy McGrady','tracy mcgrady'),(81,'Al Horford','al horford'),(82,'Elgin Baylor','elgin baylor'),(83,'Anthony Mason','anthony mason'),(84,'Bill Walton','bill walton'),(85,'Blake Griffin','blake griffin'),(86,'Julius Randle','julius randle'),(87,'Allen Iverson','allen iverson'),(88,'Dirk Nowitzki','dirk nowitzki'),(89,'Damian Lillard','damian lillard'),(90,'De''Aaron Fox','deaaron fox'),(91,'D''Angelo Russell','dangelo russell'),(92,'Kyrie Irving','kyrie irving'),(93,'Patrick Ewing','patrick ewing'),(94,'Vince Carter','vince carter'),(95,'Tim Hardaway','tim hardaway'),(96,'Toni Kukoc','toni kukoc'),(97,'Mookie Blaylock','mookie blaylock'),(98,'Kevin Love','kevin love'),(99,'Jalen Brunson','jalen brunson'),(100,'Jamal Murray','jamal murray');
+INSERT INTO players VALUES
+(101,'Paolo Banchero','paolo banchero'),(102,'Pascal Siakam','pascal siakam'),(103,'Donovan Mitchell','donovan mitchell'),(104,'Carmelo Anthony','carmelo anthony'),(105,'Kawhi Leonard','kawhi leonard'),(106,'Joel Embiid','joel embiid'),(107,'Anthony Edwards','anthony edwards'),(108,'Bradley Beal','bradley beal'),(109,'Khris Middleton','khris middleton'),(110,'Shawn Kemp','shawn kemp'),(111,'Evan Mobley','evan mobley'),(112,'Derrick Coleman','derrick coleman'),(113,'Zach LaVine','zach lavine'),(114,'Klay Thompson','klay thompson'),(115,'Reggie Miller','reggie miller'),(116,'CJ McCollum','cj mccollum'),(117,'Kemba Walker','kemba walker'),(118,'Derrick Rose','derrick rose'),(119,'Tony Parker','tony parker'),(120,'Manu Ginobili','manu ginobili'),(121,'Marc Gasol','marc gasol'),(122,'Marcus Smart','marcus smart'),(123,'Rudy Gobert','rudy gobert'),(124,'Brandon Ingram','brandon ingram'),(125,'Chet Holmgren','chet holmgren'),(126,'DeMar DeRozan','demar derozan'),(127,'George Gervin','george gervin'),(128,'Pete Maravich','pete maravich'),(129,'Dominique Wilkins','dominique wilkins'),(130,'Jamal Crawford','jamal crawford'),(131,'Doc Rivers','doc rivers'),(132,'Bernard King','bernard king'),(133,'Bob McAdoo','bob mcadoo'),(134,'Ray Allen','ray allen'),(135,'Buddy Hield','buddy hield'),(136,'Eric Gordon','eric gordon'),(137,'Duncan Robinson','duncan robinson'),(138,'Malik Beasley','malik beasley'),(139,'Kyle Korver','kyle korver'),(140,'JJ Redick','jj redick'),(141,'Anfernee Simons','anfernee simons'),(142,'Desmond Bane','desmond bane'),(143,'Lauri Markkanen','lauri markkanen'),(144,'Keegan Murray','keegan murray'),(145,'Bill Russell','bill russell'),(146,'Jerry West','jerry west'),(147,'Moses Malone','moses malone'),(148,'Elvin Hayes','elvin hayes'),(149,'Wes Unseld','wes unseld'),(150,'Bob Pettit','bob pettit');
+INSERT INTO players VALUES
+(151,'Joe Dumars','joe dumars'),(152,'Robert Horry','robert horry'),(153,'Derek Fisher','derek fisher'),(154,'Robert Parish','robert parish'),(155,'James Worthy','james worthy'),(156,'Kevin McHale','kevin mchale'),(157,'Dennis Johnson','dennis johnson'),(158,'Adrian Dantley','adrian dantley'),(159,'Alex English','alex english'),(160,'Chris Mullin','chris mullin'),(161,'Mitch Richmond','mitch richmond'),(162,'Glen Rice','glen rice'),(163,'Peja Stojakovic','peja stojakovic'),(164,'Danny Green','danny green'),(165,'JR Smith','jr smith'),(166,'Jason Terry','jason terry'),(167,'Lou Williams','lou williams'),(168,'Mike Conley','mike conley'),(169,'Fred VanVleet','fred vanvleet'),(170,'Udonis Haslem','udonis haslem'),(171,'PJ Tucker','pj tucker'),(172,'Patrick Beverley','patrick beverley'),(173,'Marcus Morris','marcus morris'),(174,'Markieff Morris','markieff morris'),(175,'Charles Oakley','charles oakley'),(176,'Vernon Maxwell','vernon maxwell'),(177,'Bill Laimbeer','bill laimbeer'),(178,'Rick Mahorn','rick mahorn'),(179,'Dikembe Mutombo','dikembe mutombo'),(180,'Alonzo Mourning','alonzo mourning'),(181,'Detlef Schrempf','detlef schrempf'),(182,'Dan Majerle','dan majerle'),(183,'Jeff Hornacek','jeff hornacek'),(184,'Mark Price','mark price'),(185,'Steve Kerr','steve kerr'),(186,'Horace Grant','horace grant'),(187,'Dennis Scott','dennis scott'),(188,'George McCloud','george mccloud'),(189,'Jason Richardson','jason richardson'),(190,'Brook Lopez','brook lopez'),(191,'Zion Williamson','zion williamson'),(192,'Greg Oden','greg oden'),(193,'Sam Bowie','sam bowie'),(194,'Brandon Roy','brandon roy'),(195,'Yao Ming','yao ming'),(196,'Jonathan Isaac','jonathan isaac'),(197,'Kristaps Porzingis','kristaps porzingis'),(198,'A.C. Green','ac green'),(199,'Chris Bosh','chris bosh'),(200,'Paul Pierce','paul pierce');
+INSERT INTO players VALUES
+(201,'Rasheed Wallace','rasheed wallace'),(202,'Ben Wallace','ben wallace'),(203,'Chauncey Billups','chauncey billups'),(204,'Richard Hamilton','richard hamilton'),(205,'Tayshaun Prince','tayshaun prince'),(206,'Gilbert Arenas','gilbert arenas'),(207,'Antawn Jamison','antawn jamison'),(208,'Isaiah Thomas','isaiah thomas'),(209,'Jaylen Brown','jaylen brown'),(210,'Derrick White','derrick white'),(211,'Mikal Bridges','mikal bridges'),(212,'Jarrett Allen','jarrett allen'),(213,'Darius Garland','darius garland'),(214,'Scottie Barnes','scottie barnes'),(215,'Franz Wagner','franz wagner'),(216,'Jalen Williams','jalen williams'),(217,'Tyrese Maxey','tyrese maxey'),(218,'DeAndre Jordan','deandre jordan'),(219,'Clint Capela','clint capela'),(220,'Hassan Whiteside','hassan whiteside'),(221,'Tristan Thompson','tristan thompson'),(222,'Nate Thurmond','nate thurmond'),(223,'Bob Lanier','bob lanier'),(224,'George Mikan','george mikan'),(225,'Dolph Schayes','dolph schayes'),(226,'Austin Reaves','austin reaves'),(227,'Jaren Jackson Jr.','jaren jackson jr'),(228,'Kevin Johnson','kevin johnson'),(229,'Danny Manning','danny manning'),(230,'Wayman Tisdale','wayman tisdale'),(231,'Spud Webb','spud webb'),(232,'Kevin Willis','kevin willis'),(233,'Steve Smith','steve smith'),(234,'Christian Laettner','christian laettner'),(235,'Brad Daugherty','brad daugherty'),(236,'Jalen Green','jalen green'),(237,'Amen Thompson','amen thompson'),(238,'Ausar Thompson','ausar thompson'),(239,'Cam Thomas','cam thomas'),(240,'Cam Johnson','cam johnson'),(241,'Cameron Payne','cameron payne'),(242,'Jordan Poole','jordan poole'),(243,'Andrew Wiggins','andrew wiggins'),(244,'Aaron Gordon','aaron gordon'),(245,'Michael Porter Jr.','michael porter jr'),(246,'Bruce Brown','bruce brown'),(247,'Kentavious Caldwell-Pope','kentavious caldwellpope'),(248,'Bones Hyland','bones hyland'),(249,'Christian Braun','christian braun'),(250,'Peyton Watson','peyton watson');
+INSERT INTO players VALUES
+(251,'Aaron Nesmith','aaron nesmith'),(252,'Andrew Nembhard','andrew nembhard'),(253,'Obi Toppin','obi toppin'),(254,'Myles Turner','myles turner'),(255,'Bennedict Mathurin','bennedict mathurin'),(256,'T.J. McConnell','tj mcconnell'),(257,'RJ Barrett','rj barrett'),(258,'Immanuel Quickley','immanuel quickley'),(259,'Gradey Dick','gradey dick'),(260,'Jakob Poeltl','jakob poeltl'),(261,'OG Anunoby','og anunoby'),(262,'Mitchell Robinson','mitchell robinson'),(263,'Josh Hart','josh hart'),(264,'Donte DiVincenzo','donte divincenzo'),(265,'Miles McBride','miles mcbride'),(266,'Precious Achiuwa','precious achiuwa'),(267,'Isaiah Hartenstein','isaiah hartenstein'),(268,'Cason Wallace','cason wallace'),(269,'Luguentz Dort','luguentz dort'),(270,'Aaron Wiggins','aaron wiggins'),(271,'Isaiah Joe','isaiah joe'),(272,'Kenrich Williams','kenrich williams'),(273,'Jaylin Williams','jaylin williams'),(274,'Dillon Brooks','dillon brooks'),(275,'Tari Eason','tari eason'),(276,'Jabari Smith Jr.','jabari smith jr'),(277,'Steven Adams','steven adams'),(278,'Jaden Ivey','jaden ivey'),(279,'Jalen Duren','jalen duren'),(280,'Isaiah Stewart','isaiah stewart'),(281,'Marcus Sasser','marcus sasser'),(282,'Killian Hayes','killian hayes'),(283,'Bojan Bogdanovic','bojan bogdanovic'),(284,'Bogdan Bogdanovic','bogdan bogdanovic'),(285,'Onyeka Okongwu','onyeka okongwu'),(286,'Jalen Johnson','jalen johnson'),(287,'De''Andre Hunter','deandre hunter'),(288,'Saddiq Bey','saddiq bey'),(289,'Dyson Daniels','dyson daniels'),(290,'Zaccharie Risacher','zaccharie risacher'),(291,'Alex Sarr','alex sarr'),(292,'Bilal Coulibaly','bilal coulibaly'),(293,'Kyle Kuzma','kyle kuzma'),(294,'Corey Kispert','corey kispert'),(295,'Tyus Jones','tyus jones'),(296,'Tre Jones','tre jones'),(297,'Keldon Johnson','keldon johnson'),(298,'Devin Vassell','devin vassell'),(299,'Jeremy Sochan','jeremy sochan'),(300,'Stephon Castle','stephon castle');
+INSERT INTO players VALUES
+(301,'Harrison Barnes','harrison barnes'),(302,'Zach Collins','zach collins'),(303,'Malaki Branham','malaki branham'),(304,'Trey Murphy III','trey murphy iii'),(305,'Herbert Jones','herbert jones'),(306,'Jose Alvarado','jose alvarado'),(307,'Jonas Valanciunas','jonas valanciunas'),(308,'Naji Marshall','naji marshall'),(309,'Larry Nance Jr.','larry nance jr'),(310,'Dereck Lively II','dereck lively ii'),(311,'Daniel Gafford','daniel gafford'),(312,'Josh Green','josh green'),(313,'Maxi Kleber','maxi kleber'),(314,'Tim Hardaway Jr.','tim hardaway jr'),(315,'Dwight Powell','dwight powell'),(316,'Quentin Grimes','quentin grimes'),(317,'Jaden Hardy','jaden hardy'),(318,'P.J. Washington','pj washington'),(319,'Miles Bridges','miles bridges'),(320,'Mark Williams','mark williams'),(321,'Grant Williams','grant williams'),(322,'Brandon Miller','brandon miller'),(323,'Tre Mann','tre mann'),(324,'Seth Curry','seth curry'),(325,'Coby White','coby white'),(326,'Patrick Williams','patrick williams'),(327,'Ayo Dosunmu','ayo dosunmu'),(328,'Dalen Terry','dalen terry'),(329,'Torrey Craig','torrey craig'),(330,'Goran Dragic','goran dragic'),(331,'Sam Merrill','sam merrill'),(332,'Georges Niang','georges niang'),(333,'Caris LeVert','caris levert'),(334,'Isaac Okoro','isaac okoro'),(335,'Dean Wade','dean wade'),(336,'Ty Jerome','ty jerome'),(337,'Max Strus','max strus'),(338,'Tyler Herro','tyler herro'),(339,'Nikola Jovic','nikola jovic'),(340,'Jaime Jaquez Jr.','jaime jaquez jr'),(341,'Caleb Martin','caleb martin'),(342,'Cody Martin','cody martin'),(343,'Terry Rozier','terry rozier'),(344,'Kel''el Ware','kelel ware'),(345,'Haywood Highsmith','haywood highsmith'),(346,'Josh Richardson','josh richardson'),(347,'Jusuf Nurkic','jusuf nurkic'),(348,'Grayson Allen','grayson allen'),(349,'Royce O''Neale','royce oneale'),(350,'Bol Bol','bol bol');
+INSERT INTO players VALUES
+(351,'Ryan Dunn','ryan dunn'),(352,'Damion Lee','damion lee'),(353,'Monte Morris','monte morris'),(354,'Aaron Holiday','aaron holiday'),(355,'Justin Holiday','justin holiday'),(356,'Keon Ellis','keon ellis'),(357,'Kevin Huerter','kevin huerter'),(358,'Trey Lyles','trey lyles'),(359,'Davion Mitchell','davion mitchell'),(360,'Malik Monk','malik monk'),(361,'Chris Duarte','chris duarte'),(362,'Sasha Vezenkov','sasha vezenkov'),(363,'Doug McDermott','doug mcdermott'),(364,'Jeremy Lamb','jeremy lamb'),(365,'Victor Oladipo','victor oladipo'),(366,'Goga Bitadze','goga bitadze'),(367,'Wendell Carter Jr.','wendell carter jr'),(368,'Markelle Fultz','markelle fultz'),(369,'Cole Anthony','cole anthony'),(370,'Gary Harris','gary harris'),(371,'Moritz Wagner','moritz wagner'),(372,'Anthony Black','anthony black'),(373,'Jett Howard','jett howard'),(374,'Caleb Houstan','caleb houstan'),(375,'Deni Avdija','deni avdija'),(376,'Marvin Bagley III','marvin bagley iii'),(377,'Richaun Holmes','richaun holmes'),(378,'Johnny Davis','johnny davis'),(379,'Landry Shamet','landry shamet'),(380,'Delon Wright','delon wright'),(381,'Jared Butler','jared butler'),(382,'Jordan Clarkson','jordan clarkson'),(383,'Collin Sexton','collin sexton'),(384,'Walker Kessler','walker kessler'),(385,'Talen Horton-Tucker','talen hortontucker'),(386,'Kelly Olynyk','kelly olynyk'),(387,'John Collins','john collins'),(388,'Taylor Hendricks','taylor hendricks'),(389,'Keyonte George','keyonte george'),(390,'Ochai Agbaji','ochai agbaji'),(391,'Kris Dunn','kris dunn'),(392,'Cody Williams','cody williams'),(393,'Jaxson Hayes','jaxson hayes'),(394,'Nickeil Alexander-Walker','nickeil alexanderwalker'),(395,'Lonnie Walker IV','lonnie walker iv'),(396,'Bryn Forbes','bryn forbes'),(397,'Patty Mills','patty mills'),(398,'Davis Bertans','davis bertans'),(399,'Kyle Anderson','kyle anderson'),(400,'Cory Joseph','cory joseph');
+INSERT INTO players VALUES
+(401,'Rui Hachimura','rui hachimura'),(402,'Jarred Vanderbilt','jarred vanderbilt'),(403,'Gabe Vincent','gabe vincent'),(404,'Dalton Knecht','dalton knecht'),(405,'Max Christie','max christie'),(406,'Alex Caruso','alex caruso'),(407,'Avery Bradley','avery bradley'),(408,'Wesley Matthews','wesley matthews'),(409,'Payton Pritchard','payton pritchard'),(410,'Sam Hauser','sam hauser'),(411,'Luke Kornet','luke kornet'),(412,'Robert Williams III','robert williams iii'),(413,'Jae Crowder','jae crowder'),(414,'Tony Allen','tony allen'),(415,'Glen Davis','glen davis'),(416,'Spencer Dinwiddie','spencer dinwiddie'),(417,'Dennis Schroder','dennis schroder'),(418,'Reggie Jackson','reggie jackson'),(419,'Norman Powell','norman powell'),(420,'Ivica Zubac','ivica zubac'),(421,'Terance Mann','terance mann'),(422,'Nicolas Batum','nicolas batum'),(423,'Mason Plumlee','mason plumlee'),(424,'Robert Covington','robert covington'),(425,'Luke Kennard','luke kennard'),(426,'Amir Coffey','amir coffey'),(427,'Austin Rivers','austin rivers'),(428,'Montrezl Harrell','montrezl harrell'),(429,'Serge Ibaka','serge ibaka'),(430,'Thabo Sefolosha','thabo sefolosha'),(431,'Kendrick Perkins','kendrick perkins'),(432,'Nick Collison','nick collison'),(433,'Jeff Green','jeff green'),(434,'Enes Kanter','enes kanter'),(435,'Dion Waiters','dion waiters'),(436,'Andre Roberson','andre roberson'),(437,'Jerami Grant','jerami grant'),(438,'Hamidou Diallo','hamidou diallo'),(439,'Mike Muscala','mike muscala'),(440,'Derrick Favors','derrick favors'),(441,'Rodney Hood','rodney hood'),(442,'Gordon Hayward','gordon hayward'),(443,'Joe Ingles','joe ingles'),(444,'Naz Reid','naz reid'),(445,'Jaden McDaniels','jaden mcdaniels'),(446,'Rob Dillingham','rob dillingham'),(447,'Mo Bamba','mo bamba'),(448,'Thanasis Antetokounmpo','thanasis antetokounmpo'),(449,'Pat Connaughton','pat connaughton'),(450,'Bobby Portis','bobby portis');
+INSERT INTO players VALUES
+(451,'Gary Trent Jr.','gary trent jr'),(452,'Taurean Prince','taurean prince'),(453,'Kevin Porter Jr.','kevin porter jr'),(454,'Nic Claxton','nic claxton'),(455,'Day''Ron Sharpe','dayron sharpe'),(456,'Dorian Finney-Smith','dorian finneysmith'),(457,'Ziaire Williams','ziaire williams'),(458,'Noah Clowney','noah clowney'),(459,'Dennis Smith Jr.','dennis smith jr'),(460,'Tobias Harris','tobias harris'),(461,'Ron Holland II','ron holland ii'),(462,'Jalen Suggs','jalen suggs'),(463,'Kelly Oubre Jr.','kelly oubre jr'),(464,'De''Anthony Melton','deanthony melton'),(465,'Jared McCain','jared mccain'),(466,'Guerschon Yabusele','guerschon yabusele'),(467,'Paul Reed','paul reed'),(468,'Chris Boucher','chris boucher'),(469,'Jevon Carter','jevon carter'),(470,'Julian Phillips','julian phillips'),(471,'Craig Porter Jr.','craig porter jr'),(472,'Tristan Vukcevic','tristan vukcevic'),(473,'Nick Smith Jr.','nick smith jr'),(474,'Jarace Walker','jarace walker'),(475,'Ben Sheppard','ben sheppard'),(476,'Ousmane Dieng','ousmane dieng'),(477,'Julian Strawther','julian strawther'),(478,'Zeke Nnaji','zeke nnaji'),(479,'Dario Saric','dario saric'),(480,'Oso Ighodaro','oso ighodaro'),(481,'Deandre Ayton','deandre ayton'),(482,'Alex Len','alex len'),(483,'Scoot Henderson','scoot henderson'),(484,'Shaedon Sharpe','shaedon sharpe'),(485,'Donovan Clingan','donovan clingan'),(486,'Toumani Camara','toumani camara'),(487,'Matisse Thybulle','matisse thybulle'),(488,'Dante Exum','dante exum'),(489,'Brandon Clarke','brandon clarke'),(490,'Santi Aldama','santi aldama'),(491,'Zach Edey','zach edey'),(492,'Vince Williams Jr.','vince williams jr'),(493,'John Konchar','john konchar'),(494,'GG Jackson','gg jackson'),(495,'Cam Whitmore','cam whitmore'),(496,'Jock Landale','jock landale'),(497,'Reed Sheppard','reed sheppard'),(498,'Jordan Hawkins','jordan hawkins'),(499,'Yves Missi','yves missi'),(500,'Julian Champagnie','julian champagnie');
+INSERT INTO players VALUES
+(501,'Blake Wesley','blake wesley'),(502,'Jonathan Kuminga','jonathan kuminga'),(503,'Moses Moody','moses moody'),(504,'Brandin Podziemski','brandin podziemski'),(505,'Trayce Jackson-Davis','trayce jacksondavis'),(506,'Kevon Looney','kevon looney'),(507,'Gary Payton II','gary payton ii'),(508,'Derrick Jones Jr.','derrick jones jr'),(509,'Bronny James','bronny james'),(510,'Christian Wood','christian wood'),(511,'Cam Reddish','cam reddish'),(512,'AJ Griffin','aj griffin'),(513,'Justise Winslow','justise winslow'),(514,'Kendrick Nunn','kendrick nunn'),(515,'James Johnson','james johnson'),(516,'Meyers Leonard','meyers leonard'),(517,'Tyler Johnson','tyler johnson'),(518,'Wayne Ellington','wayne ellington'),(519,'Jahlil Okafor','jahlil okafor'),(520,'Willy Hernangomez','willy hernangomez'),(521,'Mario Hezonja','mario hezonja'),(522,'Dragan Bender','dragan bender'),(523,'Marquese Chriss','marquese chriss'),(524,'Josh Jackson','josh jackson'),(525,'Frank Ntilikina','frank ntilikina'),(526,'Emmanuel Mudiay','emmanuel mudiay'),(527,'Evan Fournier','evan fournier'),(528,'Iman Shumpert','iman shumpert'),(529,'Tyson Chandler','tyson chandler'),(530,'Charlie Ward','charlie ward'),(531,'Allan Houston','allan houston'),(532,'John Starks','john starks'),(533,'Greg Anthony','greg anthony'),(534,'Hubert Davis','hubert davis'),(535,'Herb Williams','herb williams'),(536,'Joe Johnson','joe johnson'),(537,'Josh Smith','josh smith'),(538,'Al Jefferson','al jefferson'),(539,'Paul Millsap','paul millsap'),(540,'Carlos Boozer','carlos boozer'),(541,'Deron Williams','deron williams'),(542,'Mo Williams','mo williams'),(543,'Anderson Varejao','anderson varejao'),(544,'Zydrunas Ilgauskas','zydrunas ilgauskas'),(545,'Larry Hughes','larry hughes'),(546,'Drew Gooden','drew gooden'),(547,'Caron Butler','caron butler'),(548,'Gerald Wallace','gerald wallace'),(549,'Gerald Green','gerald green'),(550,'Stephen Jackson','stephen jackson');
+INSERT INTO players VALUES
+(551,'Al Harrington','al harrington'),(552,'David West','david west'),(553,'Roy Hibbert','roy hibbert'),(554,'George Hill','george hill'),(555,'Lance Stephenson','lance stephenson'),(556,'Tyreke Evans','tyreke evans'),(557,'DeMarre Carroll','demarre carroll'),(558,'Jeff Teague','jeff teague'),(559,'Kent Bazemore','kent bazemore'),(560,'Kris Humphries','kris humphries'),(561,'Andrea Bargnani','andrea bargnani'),(562,'Charlie Villanueva','charlie villanueva'),(563,'Jose Calderon','jose calderon'),(564,'T.J. Ford','tj ford'),(565,'Jermaine O''Neal','jermaine oneal'),(566,'Danny Granger','danny granger'),(567,'Mike Dunleavy Jr.','mike dunleavy jr'),(568,'Luol Deng','luol deng'),(569,'Ben Gordon','ben gordon'),(570,'Kirk Hinrich','kirk hinrich'),(571,'Taj Gibson','taj gibson'),(572,'Nate Robinson','nate robinson'),(573,'Raymond Felton','raymond felton'),(574,'Ty Lawson','ty lawson'),(575,'Wilson Chandler','wilson chandler'),(576,'Danilo Gallinari','danilo gallinari'),(577,'JaVale McGee','javale mcgee'),(578,'Nene','nene'),(579,'Kenneth Faried','kenneth faried'),(580,'Andre Miller','andre miller'),(581,'Arron Afflalo','arron afflalo'),(582,'Corey Brewer','corey brewer'),(583,'Ricky Rubio','ricky rubio'),(584,'Nikola Pekovic','nikola pekovic'),(585,'Gorgui Dieng','gorgui dieng'),(586,'Ersan Ilyasova','ersan ilyasova'),(587,'Brandon Jennings','brandon jennings'),(588,'Michael Carter-Williams','michael carterwilliams'),(589,'O.J. Mayo','oj mayo'),(590,'Eric Bledsoe','eric bledsoe'),(591,'P.J. Brown','pj brown'),(592,'Jamaal Magloire','jamaal magloire'),(593,'David Wesley','david wesley'),(594,'Jamal Mashburn','jamal mashburn'),(595,'Eddie Jones','eddie jones'),(596,'Tim Thomas','tim thomas'),(597,'Keith Van Horn','keith van horn'),(598,'Kerry Kittles','kerry kittles'),(599,'Richard Jefferson','richard jefferson'),(600,'Kenyon Martin','kenyon martin');
+INSERT INTO players VALUES
+(601,'Jason Collins','jason collins'),(602,'Devin Harris','devin harris'),(603,'Marcus Camby','marcus camby'),(604,'Stephon Marbury','stephon marbury'),(605,'Steve Francis','steve francis'),(606,'Cuttino Mobley','cuttino mobley'),(607,'Shane Battier','shane battier'),(608,'Luis Scola','luis scola'),(609,'Aaron Brooks','aaron brooks'),(610,'Chuck Hayes','chuck hayes'),(611,'Carl Landry','carl landry'),(612,'Trevor Ariza','trevor ariza'),(613,'Ron Artest','ron artest'),(614,'Antonio McDyess','antonio mcdyess'),(615,'Rodney Stuckey','rodney stuckey'),(616,'Greg Monroe','greg monroe'),(617,'Brandon Knight','brandon knight'),(618,'Jerry Stackhouse','jerry stackhouse'),(619,'Chucky Atkins','chucky atkins'),(620,'Cliff Robinson','cliff robinson'),(621,'Damon Stoudamire','damon stoudamire'),(622,'Bonzi Wells','bonzi wells'),(623,'Zach Randolph','zach randolph'),(624,'Theo Ratliff','theo ratliff'),(625,'Shareef Abdur-Rahim','shareef abdurrahim'),(626,'Vladimir Radmanovic','vladimir radmanovic'),(627,'Rashard Lewis','rashard lewis'),(628,'Brent Barry','brent barry'),(629,'Desmond Mason','desmond mason'),(630,'Vin Baker','vin baker'),(631,'Sam Cassell','sam cassell'),(632,'Michael Redd','michael redd'),(633,'Andrew Bogut','andrew bogut'),(634,'John Salmons','john salmons'),(635,'Kevin Martin','kevin martin'),(636,'Francisco Garcia','francisco garcia'),(637,'Beno Udrih','beno udrih'),(638,'Rudy Gay','rudy gay'),(639,'Mike Miller','mike miller'),(640,'Hedo Turkoglu','hedo turkoglu'),(641,'Jameer Nelson','jameer nelson'),(642,'Marcin Gortat','marcin gortat'),(643,'Ryan Anderson','ryan anderson'),(644,'Channing Frye','channing frye'),(645,'Leandro Barbosa','leandro barbosa'),(646,'Shawn Marion','shawn marion'),(647,'Amar''e Stoudemire','amare stoudemire'),(648,'Raja Bell','raja bell'),(649,'Quentin Richardson','quentin richardson'),(650,'Jared Dudley','jared dudley');
+INSERT INTO players VALUES
+(651,'Festus Ezeli','festus ezeli'),(652,'Shaun Livingston','shaun livingston'),(653,'Marreese Speights','marreese speights'),(654,'Zaza Pachulia','zaza pachulia'),(655,'David Lee','david lee'),(656,'Jarrett Jack','jarrett jack'),(657,'Monta Ellis','monta ellis'),(658,'Andris Biedrins','andris biedrins'),(659,'Corey Maggette','corey maggette'),(660,'Elton Brand','elton brand'),(661,'Chris Kaman','chris kaman'),(662,'Emeka Okafor','emeka okafor'),(663,'Bruce Bowen','bruce bowen'),(664,'Michael Finley','michael finley'),(665,'Antonio Daniels','antonio daniels'),(666,'Malik Rose','malik rose'),(667,'Speedy Claxton','speedy claxton'),(668,'Brian Cardinal','brian cardinal'),(669,'Eduardo Najera','eduardo najera'),(670,'Shawn Bradley','shawn bradley'),(671,'Erick Dampier','erick dampier'),(672,'Josh Howard','josh howard'),(673,'DeShawn Stevenson','deshawn stevenson'),(674,'Brendan Haywood','brendan haywood'),(675,'Etan Thomas','etan thomas'),(676,'Earl Boykins','earl boykins'),(677,'Damon Jones','damon jones'),(678,'Mike Bibby','mike bibby'),(679,'Doug Christie','doug christie'),(680,'Scot Pollard','scot pollard'),(681,'Bobby Jackson','bobby jackson'),(682,'Brad Miller','brad miller'),(683,'Mehmet Okur','mehmet okur'),(684,'Andrei Kirilenko','andrei kirilenko'),(685,'Carlos Arroyo','carlos arroyo'),(686,'Yi Jianlian','yi jianlian'),(687,'Omer Asik','omer asik'),(688,'Daniel Theis','daniel theis'),(689,'Ish Smith','ish smith'),(690,'Garrett Temple','garrett temple'),(691,'Langston Galloway','langston galloway'),(692,'Tony Snell','tony snell'),(693,'Alec Burks','alec burks'),(694,'E''Twaun Moore','etwaun moore'),(695,'Marco Belinelli','marco belinelli'),(696,'Mirza Teletovic','mirza teletovic'),(697,'CJ Miles','cj miles'),(698,'Jodie Meeks','jodie meeks'),(699,'Anthony Tolliver','anthony tolliver'),(700,'Cody Zeller','cody zeller');
+INSERT INTO players VALUES
+(701,'Tyler Zeller','tyler zeller'),(702,'Miles Plumlee','miles plumlee'),(703,'Frank Kaminsky','frank kaminsky'),(704,'Noah Vonleh','noah vonleh'),(705,'TJ Warren','tj warren'),(706,'Stanley Johnson','stanley johnson'),(707,'Anthony Bennett','anthony bennett'),(708,'Hasheem Thabeet','hasheem thabeet'),(709,'Adam Morrison','adam morrison'),(710,'Michael Olowokandi','michael olowokandi'),(711,'Kwame Brown','kwame brown'),(712,'Darko Milicic','darko milicic'),(713,'Jay Williams','jay williams'),(714,'Jonny Flynn','jonny flynn'),(715,'Wesley Johnson','wesley johnson'),(716,'Derrick Williams','derrick williams'),(717,'Jimmer Fredette','jimmer fredette'),(718,'Jan Vesely','jan vesely'),(719,'Thomas Robinson','thomas robinson'),(720,'Wally Szczerbiak','wally szczerbiak'),(721,'Sam Mitchell','sam mitchell'),(722,'Randy Foye','randy foye'),(723,'Sebastian Telfair','sebastian telfair'),(724,'Lindsey Hunter','lindsey hunter'),(725,'Rex Chapman','rex chapman'),(726,'Antoine Walker','antoine walker'),(727,'Kenny Anderson','kenny anderson'),(728,'Eddie House','eddie house'),(729,'James Posey','james posey'),(730,'Brian Scalabrine','brian scalabrine'),(731,'Jared Sullinger','jared sullinger'),(732,'Brandon Bass','brandon bass'),(733,'Leon Powe','leon powe'),(734,'Voshon Lenard','voshon lenard'),(735,'Bimbo Coles','bimbo coles'),(736,'Bobby Phills','bobby phills'),(737,'Nick Anderson','nick anderson'),(738,'Brian Shaw','brian shaw'),(739,'Kenny Smith','kenny smith'),(740,'Mario Elie','mario elie'),(741,'Bryon Russell','bryon russell'),(742,'Greg Ostertag','greg ostertag'),(743,'Howard Eisley','howard eisley'),(744,'Antoine Carr','antoine carr'),(745,'Shandon Anderson','shandon anderson'),(746,'Latrell Sprewell','latrell sprewell'),(747,'Chris Gatling','chris gatling'),(748,'Rod Strickland','rod strickland'),(749,'Juwan Howard','juwan howard'),(750,'Calbert Cheaney','calbert cheaney');
+INSERT INTO players VALUES
+(751,'Gheorghe Muresan','gheorghe muresan'),(752,'Manute Bol','manute bol'),(753,'Muggsy Bogues','muggsy bogues'),(754,'Larry Johnson','larry johnson'),(755,'Dell Curry','dell curry'),(756,'Kendall Gill','kendall gill'),(757,'Mahmoud Abdul-Rauf','mahmoud abdulrauf'),(758,'LaPhonso Ellis','laphonso ellis'),(759,'Antonio Davis','antonio davis'),(760,'Dale Davis','dale davis'),(761,'Rik Smits','rik smits'),(762,'Mark Jackson','mark jackson'),(763,'Byron Scott','byron scott'),(764,'Michael Cooper','michael cooper'),(765,'Kurt Rambis','kurt rambis'),(766,'Mychal Thompson','mychal thompson'),(767,'Cedric Ceballos','cedric ceballos'),(768,'Nick Van Exel','nick van exel'),(769,'Elden Campbell','elden campbell'),(770,'Brian Grant','brian grant'),(771,'Isaiah Rider','isaiah rider'),(772,'Tom Gugliotta','tom gugliotta'),(773,'Terrell Brandon','terrell brandon'),(774,'Tyrone Hill','tyrone hill'),(775,'Craig Ehlo','craig ehlo'),(776,'Ron Harper','ron harper'),(777,'Scott Williams','scott williams'),(778,'Will Perdue','will perdue'),(779,'Stacey King','stacey king'),(780,'Jud Buechler','jud buechler'),(781,'Randy Brown','randy brown'),(782,'Bill Wennington','bill wennington'),(783,'Scott Burrell','scott burrell'),(784,'Bison Dele','bison dele'),(785,'Jack Haley','jack haley'),(786,'Nate McMillan','nate mcmillan'),(787,'Hersey Hawkins','hersey hawkins'),(788,'Dale Ellis','dale ellis'),(789,'Derrick McKey','derrick mckey'),(790,'Xavier McDaniel','xavier mcdaniel'),(791,'Eddie Johnson','eddie johnson'),(792,'Larry Nance','larry nance'),(793,'Rolando Blackman','rolando blackman'),(794,'Derek Harper','derek harper'),(795,'Sam Perkins','sam perkins'),(796,'Brad Davis','brad davis'),(797,'James Donaldson','james donaldson'),(798,'Roy Tarpley','roy tarpley'),(799,'Kiki Vandeweghe','kiki vandeweghe'),(800,'Hot Rod Williams','hot rod williams');
+INSERT INTO players VALUES
+(801,'Jayson Williams','jayson williams'),(802,'Chris Morris','chris morris'),(803,'Stacey Augmon','stacey augmon'),(804,'Drazen Petrovic','drazen petrovic'),(805,'Sarunas Marciulionis','sarunas marciulionis'),(806,'Arvydas Sabonis','arvydas sabonis'),(807,'World B. Free','world b free'),(808,'Sidney Moncrief','sidney moncrief'),(809,'Marques Johnson','marques johnson'),(810,'Terry Cummings','terry cummings'),(811,'Ricky Pierce','ricky pierce'),(812,'Paul Pressey','paul pressey'),(813,'Jack Sikma','jack sikma'),(814,'Tom Chambers','tom chambers'),(815,'Dan Issel','dan issel'),(816,'Calvin Natt','calvin natt'),(817,'Wayne Cooper','wayne cooper'),(818,'Michael Adams','michael adams'),(819,'Walter Davis','walter davis'),(820,'Maurice Cheeks','maurice cheeks'),(821,'Andrew Toney','andrew toney'),(822,'Bobby Jones','bobby jones'),(823,'Caldwell Jones','caldwell jones'),(824,'Darryl Dawkins','darryl dawkins'),(825,'Mike Gminski','mike gminski'),(826,'Johnny Dawkins','johnny dawkins'),(827,'Armen Gilliam','armen gilliam'),(828,'Buck Williams','buck williams'),(829,'Otis Birdsong','otis birdsong'),(830,'Albert King','albert king'),(831,'Michael Ray Richardson','michael ray richardson'),(832,'Bill Cartwright','bill cartwright'),(833,'Trent Tucker','trent tucker'),(834,'Rory Sparrow','rory sparrow'),(835,'Gerald Wilkins','gerald wilkins'),(836,'Johnny Newman','johnny newman'),(837,'Charles Smith','charles smith'),(838,'Maurice Lucas','maurice lucas'),(839,'Jim Paxson','jim paxson'),(840,'Kenny Carr','kenny carr'),(841,'Sleepy Floyd','sleepy floyd'),(842,'Purvis Short','purvis short'),(843,'Joe Barry Carroll','joe barry carroll'),(844,'Chris Childs','chris childs'),(845,'Otis Thorpe','otis thorpe'),(846,'Robert Reid','robert reid'),(847,'Mike Newlin','mike newlin'),(848,'Kevin Porter','kevin porter'),(849,'Norm Van Lier','norm van lier'),(850,'Jerry Sloan','jerry sloan');
+INSERT INTO players VALUES
+(851,'Bob Love','bob love'),(852,'Artis Gilmore','artis gilmore'),(853,'Dan Roundfield','dan roundfield'),(854,'Truck Robinson','truck robinson'),(855,'Bobby Dandridge','bobby dandridge'),(856,'Jamaal Wilkes','jamaal wilkes'),(857,'Norm Nixon','norm nixon'),(858,'Swen Nater','swen nater'),(859,'Marvin Webster','marvin webster'),(860,'David Thompson','david thompson'),(861,'James Silas','james silas'),(862,'Larry Kenon','larry kenon'),(863,'Marvin Barnes','marvin barnes'),(864,'Mel Daniels','mel daniels'),(865,'Roger Brown','roger brown'),(866,'Mack Calvin','mack calvin'),(867,'Earl Monroe','earl monroe'),(868,'Dave Bing','dave bing'),(869,'Nate Archibald','nate archibald'),(870,'Spencer Haywood','spencer haywood'),(871,'Connie Hawkins','connie hawkins'),(872,'Hal Greer','hal greer'),(873,'Billy Cunningham','billy cunningham'),(874,'Chet Walker','chet walker'),(875,'Willis Reed','willis reed'),(876,'Dave DeBusschere','dave debusschere'),(877,'Bill Bradley','bill bradley'),(878,'Dick Barnett','dick barnett'),(879,'Jerry Lucas','jerry lucas'),(880,'Cazzie Russell','cazzie russell'),(881,'Phil Jackson','phil jackson'),(882,'Sam Jones','sam jones'),(883,'K.C. Jones','kc jones'),(884,'Tom Heinsohn','tom heinsohn'),(885,'Bill Sharman','bill sharman'),(886,'Frank Ramsey','frank ramsey'),(887,'Don Nelson','don nelson'),(888,'Bailey Howell','bailey howell'),(889,'JoJo White','jojo white'),(890,'Paul Silas','paul silas'),(891,'Charlie Scott','charlie scott'),(892,'Paul Westphal','paul westphal'),(893,'Gus Williams','gus williams'),(894,'Fred Brown','fred brown'),(895,'Lonnie Shelton','lonnie shelton'),(896,'Gail Goodrich','gail goodrich'),(897,'Happy Hairston','happy hairston'),(898,'Zelmo Beaty','zelmo beaty'),(899,'Lenny Wilkens','lenny wilkens'),(900,'Richie Guerin','richie guerin');
+INSERT INTO players VALUES
+(901,'Lou Hudson','lou hudson'),(902,'Walt Bellamy','walt bellamy'),(903,'Cliff Hagan','cliff hagan'),(904,'Slater Martin','slater martin'),(905,'Ed Macauley','ed macauley'),(906,'Gus Johnson','gus johnson'),(907,'Jack Marin','jack marin'),(908,'Archie Clark','archie clark'),(909,'Dick Van Arsdale','dick van arsdale'),(910,'Tom Van Arsdale','tom van arsdale'),(911,'Jeff Mullins','jeff mullins'),(912,'Rudy LaRusso','rudy larusso'),(913,'Rudy Tomjanovich','rudy tomjanovich'),(914,'Calvin Murphy','calvin murphy'),(915,'Paul Arizin','paul arizin'),(916,'Tom Gola','tom gola'),(917,'Guy Rodgers','guy rodgers'),(918,'Al Attles','al attles'),(919,'Dino Radja','dino radja'),(920,'Dee Brown','dee brown'),(921,'Reggie Lewis','reggie lewis'),(922,'Danny Ainge','danny ainge'),(923,'Jerry Sichting','jerry sichting'),(924,'Scott Wedman','scott wedman'),(925,'Cedric Maxwell','cedric maxwell'),(926,'M.L. Carr','ml carr'),(927,'Gerald Henderson','gerald henderson'),(928,'Quinn Buckner','quinn buckner'),(929,'Terry Porter','terry porter'),(930,'Jerome Kersey','jerome kersey'),(931,'Kevin Duckworth','kevin duckworth'),(932,'Mark West','mark west'),(933,'Danny Ferry','danny ferry'),(934,'Steve Blake','steve blake'),(935,'Earl Watson','earl watson'),(936,'Sedale Threatt','sedale threatt'),(937,'Benoit Benjamin','benoit benjamin'),(938,'Olden Polynice','olden polynice'),(939,'Pooh Richardson','pooh richardson'),(940,'Doug West','doug west'),(941,'Felton Spencer','felton spencer'),(942,'Luc Longley','luc longley'),(943,'John Paxson','john paxson'),(944,'B.J. Armstrong','bj armstrong'),(945,'Cliff Levingston','cliff levingston'),(946,'Mark Aguirre','mark aguirre'),(947,'Orlando Woolridge','orlando woolridge'),(948,'Reggie Theus','reggie theus'),(949,'Kelly Tripucka','kelly tripucka'),(950,'Lionel Hollins','lionel hollins');
+INSERT INTO players VALUES
+(951,'Sidney Wicks','sidney wicks'),(952,'Geoff Petrie','geoff petrie'),(953,'Bob Gross','bob gross'),(954,'Dave Twardzik','dave twardzik'),(955,'Austin Carr','austin carr'),(956,'Bingo Smith','bingo smith'),(957,'Campy Russell','campy russell'),(958,'Phil Chenier','phil chenier'),(959,'Kevin Grevey','kevin grevey'),(960,'Mitch Kupchak','mitch kupchak'),(961,'Junior Bridgeman','junior bridgeman'),(962,'Brian Winters','brian winters'),(963,'Ernie DiGregorio','ernie digregorio'),(964,'Randy Smith','randy smith'),(965,'Garfield Heard','garfield heard'),(966,'John Drew','john drew'),(967,'Tree Rollins','tree rollins'),(968,'Jeremy Lin','jeremy lin'),(969,'Michael Beasley','michael beasley'),(970,'Greivis Vasquez','greivis vasquez'),(971,'Chandler Parsons','chandler parsons'),(972,'Terrence Jones','terrence jones'),(973,'Patrick Patterson','patrick patterson'),(974,'Trey Burke','trey burke'),(975,'Otto Porter Jr.','otto porter jr'),(976,'Thomas Bryant','thomas bryant'),(977,'Trendon Watford','trendon watford'),(978,'Jalen Smith','jalen smith'),(979,'Isaiah Jackson','isaiah jackson'),(980,'Bismack Biyombo','bismack biyombo'),(981,'Boban Marjanovic','boban marjanovic'),(982,'JaMychal Green','jamychal green'),(983,'Javonte Green','javonte green'),(984,'Garrison Mathews','garrison mathews'),(985,'Jalen McDaniels','jalen mcdaniels'),(986,'Vinnie Johnson','vinnie johnson'),(987,'James Edwards','james edwards'),(988,'John Salley','john salley'),(989,'Mark Eaton','mark eaton'),(990,'Thurl Bailey','thurl bailey'),(991,'Darrell Griffith','darrell griffith'),(992,'Tyrone Corbin','tyrone corbin'),(993,'Danny Schayes','danny schayes'),(994,'Bill Hanzlik','bill hanzlik'),(995,'T.R. Dunn','tr dunn'),(996,'Chris Dudley','chris dudley'),(997,'Rony Seikaly','rony seikaly'),(998,'Sherman Douglas','sherman douglas'),(999,'Harold Miner','harold miner'),(1000,'Billy Owens','billy owens');
+INSERT INTO players VALUES
+(1001,'Lionel Simmons','lionel simmons'),(1002,'Pervis Ellison','pervis ellison'),(1003,'Eddy Curry','eddy curry'),(1004,'Jamaal Tinsley','jamaal tinsley'),(1005,'Smush Parker','smush parker'),(1006,'Sasha Vujacic','sasha vujacic'),(1007,'Jordan Farmar','jordan farmar'),(1008,'Luke Walton','luke walton'),(1009,'Rick Fox','rick fox'),(1010,'Devean George','devean george'),(1011,'Shannon Brown','shannon brown'),(1012,'Nick Young','nick young'),(1013,'Matas Buzelis','matas buzelis'),(1014,'Tristan da Silva','tristan da silva'),(1015,'Tidjane Salaun','tidjane salaun'),(1016,'Bub Carrington','bub carrington'),(1017,'Kyshawn George','kyshawn george'),(1018,'Devin Carter','devin carter'),(1019,'Isaiah Collier','isaiah collier'),(1020,'Ajay Mitchell','ajay mitchell'),(1021,'Quinten Post','quinten post'),(1022,'Jaylen Wells','jaylen wells'),(1023,'Dalano Banton','dalano banton'),(1024,'Duop Reath','duop reath'),(1025,'Simone Fontecchio','simone fontecchio'),(1026,'Luka Garza','luka garza'),(1027,'Sandro Mamukelashvili','sandro mamukelashvili'),(1028,'Drew Eubanks','drew eubanks'),(1029,'Malcolm Brogdon','malcolm brogdon'),(1030,'Joe Harris','joe harris'),(1031,'Will Barton','will barton'),(1032,'Cedi Osman','cedi osman'),(1033,'Matthew Dellavedova','matthew dellavedova'),(1034,'Tomas Satoransky','tomas satoransky'),(1035,'Svi Mykhailiuk','svi mykhailiuk'),(1036,'KJ Martin','kj martin'),(1037,'Jae''Sean Tate','jaesean tate'),(1038,'Theo Maledon','theo maledon'),(1039,'Sekou Doumbouya','sekou doumbouya'),(1040,'James Wiseman','james wiseman'),(1041,'Usman Garuba','usman garuba'),(1042,'Josh Christopher','josh christopher'),(1043,'Chuma Okeke','chuma okeke'),(1044,'RJ Hampton','rj hampton'),(1045,'Terrence Ross','terrence ross'),(1046,'Khem Birch','khem birch'),(1047,'Robin Lopez','robin lopez'),(1048,'Furkan Korkmaz','furkan korkmaz'),(1049,'Shake Milton','shake milton'),(1050,'Mike Scott','mike scott');
+INSERT INTO players VALUES
+(1051,'Danuel House Jr.','danuel house jr'),(1052,'Omer Yurtseven','omer yurtseven'),(1053,'Solomon Hill','solomon hill'),(1054,'Devonte'' Graham','devonte graham'),(1055,'James Bouknight','james bouknight'),(1056,'Anthony Gill','anthony gill'),(1057,'Josh Okogie','josh okogie'),(1058,'Jaden Springer','jaden springer'),(1059,'Mike James','mike james'),(1060,'Bobby Simmons','bobby simmons'),(1061,'Ricky Davis','ricky davis'),(1062,'Darius Miles','darius miles'),(1063,'Morris Peterson','morris peterson'),(1064,'Jalen Rose','jalen rose'),(1065,'Rafer Alston','rafer alston'),(1066,'Anthony Parker','anthony parker'),(1067,'Carlos Delfino','carlos delfino'),(1068,'J.J. Barea','jj barea'),(1069,'Josh Childress','josh childress'),(1070,'Marvin Williams','marvin williams'),(1071,'Ronnie Brewer','ronnie brewer'),(1072,'CJ Watson','cj watson'),(1073,'D.J. Augustin','dj augustin'),(1074,'Ramon Sessions','ramon sessions'),(1075,'Austin Croshere','austin croshere'),(1076,'Jeff Foster','jeff foster'),(1077,'Ron Mercer','ron mercer'),(1078,'Eric Snow','eric snow'),(1079,'Aaron McKie','aaron mckie'),(1080,'George Lynch','george lynch'),(1081,'Matt Harpring','matt harpring'),(1082,'Jarvis Hayes','jarvis hayes'),(1083,'Tyrus Thomas','tyrus thomas'),(1084,'Larry Sanders','larry sanders'),(1085,'John Henson','john henson'),(1086,'Michael Kidd-Gilchrist','michael kiddgilchrist'),(1087,'Jared Jeffries','jared jeffries'),(1088,'Sean Elliott','sean elliott'),(1089,'Avery Johnson','avery johnson'),(1090,'Vinny Del Negro','vinny del negro'),(1091,'Chuck Person','chuck person'),(1092,'Vern Fleming','vern fleming'),(1093,'Dana Barros','dana barros'),(1094,'Todd Day','todd day'),(1095,'Anthony Peeler','anthony peeler'),(1096,'Chris Mills','chris mills'),(1097,'Donyell Marshall','donyell marshall'),(1098,'Jim Jackson','jim jackson'),(1099,'Popeye Jones','popeye jones'),(1100,'Lorenzen Wright','lorenzen wright');
+INSERT INTO players VALUES
+(1101,'Bryant Reeves','bryant reeves'),(1102,'Wesley Person','wesley person'),(1103,'John Long','john long'),(1104,'Terry Tyler','terry tyler'),(1105,'Kent Benson','kent benson'),(1106,'Doug Collins','doug collins'),(1107,'George McGinnis','george mcginnis'),(1108,'Steve Mix','steve mix'),(1109,'Henry Bibby','henry bibby'),(1110,'Don Chaney','don chaney'),(1111,'Curtis Rowe','curtis rowe'),(1112,'Kevin Loughery','kevin loughery'),(1113,'Fred Carter','fred carter'),(1114,'Wali Jones','wali jones'),(1115,'Louie Dampier','louie dampier'),(1116,'Ralph Simpson','ralph simpson'),(1117,'Billy Knight','billy knight'),(1118,'Don Buse','don buse'),(1119,'Chris Ford','chris ford'),(1120,'Wang Zhizhi','wang zhizhi'),(1121,'Yuta Watanabe','yuta watanabe'),(1122,'Yuki Kawamura','yuki kawamura'),(1123,'Aron Baynes','aron baynes'),(1124,'Nikoloz Tskitishvili','nikoloz tskitishvili'),(1125,'Nikola Mirotic','nikola mirotic'),(1126,'Juancho Hernangomez','juancho hernangomez'),(1127,'Alex Abrines','alex abrines'),(1128,'Thon Maker','thon maker'),(1129,'Brevin Knight','brevin knight'),(1130,'Bob Sura','bob sura'),(1131,'Corliss Williamson','corliss williamson'),(1132,'Walter McCarty','walter mccarty'),(1133,'Tony Delk','tony delk'),(1134,'Derek Anderson','derek anderson'),(1135,'Bryant Stith','bryant stith'),(1136,'Maurice Taylor','maurice taylor'),(1137,'Mateen Cleaves','mateen cleaves'),(1138,'Eddie Griffin','eddie griffin'),(1139,'Fabricio Oberto','fabricio oberto'),(1140,'Tiago Splitter','tiago splitter'),(1141,'Matt Bonner','matt bonner'),(1142,'Omri Casspi','omri casspi'),(1143,'Rudy Fernandez','rudy fernandez'),(1144,'Sergio Rodriguez','sergio rodriguez'),(1145,'Nando De Colo','nando de colo'),(1146,'Ian Mahinmi','ian mahinmi'),(1147,'Ronny Turiaf','ronny turiaf'),(1148,'Luke Ridnour','luke ridnour'),(1149,'Delonte West','delonte west'),(1150,'Daniel Gibson','daniel gibson');
+INSERT INTO players VALUES
+(1151,'Sasha Pavlovic','sasha pavlovic'),(1152,'Mickael Pietrus','mickael pietrus'),(1153,'Joel Przybilla','joel przybilla'),(1154,'Chris Duhon','chris duhon');
+
+-- @stats
+INSERT INTO player_stats VALUES
+(1,'td',203),(1,'fifty',5),(1,'s3',200),(1,'f40',28),(1,'pog',115),(1,'tech',115),(1,'p3',150),(1,'dd',560),(1,'p30',25),(2,'td',181),(2,'fifty',3),(2,'f40',55),(2,'pog',86),(2,'dd',680),(2,'p30',27),(3,'td',167),(3,'fifty',5),(3,'pog',81),(3,'tech',75),(3,'s3',112),(3,'f40',22),(3,'p3',130),(3,'dd',600),(3,'p30',38),(4,'td',138),(4,'pog',190),(4,'dd',530),(4,'p30',32),(4,'f40',8),(5,'td',122),(5,'fifty',15),(5,'f40',78),(5,'pog',292),(5,'tech',85),(5,'s3',149),(5,'p3',484),(5,'dd',620),(5,'p30',137),(6,'td',107),(6,'pog',158),(6,'dd',530),(6,'s3',145),(6,'p3',220),(6,'tech',60),(6,'p30',5),(7,'td',85),(7,'fifty',13),(7,'s3',284),(7,'f40',55),(7,'pog',66),(7,'tech',80),(7,'p3',160),(7,'dd',320),(7,'p30',42),(8,'td',82),(8,'fifty',23),(8,'s3',378),(8,'f40',105),(8,'pog',160),(8,'tech',125),(8,'p3',440),(8,'dd',350),(8,'p30',52),(9,'td',78),(9,'fifty',118),(9,'f40',271),(9,'pog',160),(9,'dd',968),(9,'p30',38),(10,'td',64),(10,'dd',470),(10,'pog',27),(10,'tech',40),(10,'f40',1),(11,'td',59),(11,'fifty',4),(11,'f40',47),(11,'pog',164),(11,'tech',55),(11,'s3',98),(11,'p3',80),(11,'dd',510),(11,'p30',34),(12,'td',57),(12,'fifty',7),(12,'f40',52),(12,'pog',88),(12,'tech',55),(12,'s3',66),(12,'dd',560),(12,'p30',48),(12,'p3',55),(12,'gm',120),(13,'td',43),(13,'dd',230),(13,'pog',47),(14,'td',42),(14,'pog',165),(14,'tech',170),(14,'dd',240);
+INSERT INTO player_stats VALUES
+(14,'p3',190),(14,'s3',55),(14,'p30',1),(15,'td',34),(15,'gm',280),(15,'pog',34),(15,'dd',230),(15,'tech',35),(15,'s3',2),(16,'td',33),(16,'pog',109),(16,'dd',400),(17,'td',32),(17,'pog',134),(17,'dd',300),(17,'tech',55),(17,'p30',2),(17,'p3',75),(17,'s3',33),(18,'td',30),(18,'fifty',1),(18,'pog',171),(18,'dd',280),(18,'p30',22),(18,'f40',13),(19,'td',29),(19,'gm',510),(19,'pog',38),(19,'dd',260),(19,'f40',4),(19,'tech',30),(20,'td',28),(20,'fifty',31),(20,'f40',171),(20,'pog',177),(20,'tech',50),(20,'s3',111),(20,'p3',148),(20,'dd',230),(20,'p30',109),(21,'td',25),(21,'fifty',1),(21,'pog',145),(21,'f40',20),(21,'dd',350),(21,'p30',22),(21,'p3',130),(22,'td',24),(22,'fifty',9),(22,'f40',76),(22,'pog',165),(22,'tech',145),(22,'s3',192),(22,'p3',340),(22,'dd',310),(22,'p30',87),(22,'gm',210),(23,'td',23),(23,'pog',149),(23,'tech',105),(23,'s3',165),(23,'p3',245),(23,'dd',500),(23,'p30',10),(23,'f40',4),(24,'td',21),(24,'fifty',10),(24,'f40',72),(24,'pog',237),(24,'dd',833),(24,'p30',75),(24,'s3',1),(25,'td',21),(25,'fifty',25),(25,'f40',122),(25,'pog',220),(25,'tech',100),(25,'s3',148),(25,'p3',292),(25,'dd',200),(25,'p30',88),(26,'td',20),(26,'fifty',3),(26,'f40',24),(26,'pog',123),(26,'tech',329),(26,'dd',690),(26,'p30',28),(26,'p3',95),(27,'td',17),(27,'pog',208),(27,'tech',85),(27,'p3',195),(27,'dd',240),(27,'p30',8),(27,'f40',3),(28,'td',17),(28,'pog',138),(28,'tech',90),(28,'s3',188);
+INSERT INTO player_stats VALUES
+(28,'p3',240),(28,'dd',190),(28,'p30',4),(28,'f40',2),(29,'td',17),(29,'pog',143),(29,'tech',170),(29,'dd',740),(29,'p30',12),(29,'f40',4),(29,'p3',14),(30,'td',17),(30,'fifty',1),(30,'pog',93),(30,'dd',280),(30,'p30',14),(31,'td',16),(31,'fifty',1),(31,'f40',20),(31,'pog',145),(31,'dd',770),(31,'p30',50),(31,'tech',80),(31,'p3',5),(32,'td',14),(32,'fifty',3),(32,'f40',28),(32,'pog',123),(32,'dd',590),(32,'p30',14),(33,'td',14),(33,'fifty',2),(33,'s3',233),(33,'f40',20),(33,'pog',16),(33,'tech',65),(33,'p3',65),(33,'dd',220),(33,'p30',8),(34,'td',14),(34,'s3',225),(34,'pog',38),(34,'dd',120),(34,'p30',4),(34,'tech',5),(34,'f40',3),(34,'p3',85),(35,'td',13),(35,'fifty',3),(35,'f40',28),(35,'pog',141),(35,'dd',380),(35,'p30',32),(36,'td',13),(36,'fifty',1),(36,'pog',58),(36,'gm',310),(36,'dd',140),(36,'p30',10),(36,'f40',5),(37,'td',13),(37,'f40',7),(37,'s3',125),(37,'pog',6),(37,'dd',85),(37,'tech',22),(37,'p30',1),(38,'td',13),(38,'s3',140),(38,'pog',18),(38,'dd',150),(38,'tech',20),(39,'td',12),(39,'pog',92),(39,'dd',230),(39,'tech',35),(40,'td',12),(40,'pog',16),(40,'dd',130),(40,'s3',95),(41,'td',12),(41,'gm',350),(41,'pog',33),(41,'dd',120),(41,'tech',36),(41,'s3',95),(42,'td',11),(42,'fifty',1),(42,'pog',251),(42,'tech',75),(42,'dd',841),(42,'p30',48),(42,'f40',6),(42,'s3',10),(42,'p3',14),(43,'td',11),(43,'fifty',14),(43,'s3',402),(43,'f40',58),(43,'pog',168);
+INSERT INTO player_stats VALUES
+(43,'tech',32),(43,'p3',730),(43,'dd',125),(43,'p30',58),(44,'td',11),(44,'dd',110),(44,'pog',4),(45,'td',10),(45,'fifty',1),(45,'f40',11),(45,'pog',13),(45,'gm',140),(45,'s3',115),(45,'dd',85),(45,'tech',28),(45,'p30',4),(46,'td',10),(46,'s3',220),(46,'gm',170),(46,'dd',100),(46,'tech',26),(46,'f40',6),(47,'td',9),(47,'pog',111),(47,'dd',200),(47,'p30',12),(47,'tech',55),(47,'p3',35),(48,'td',8),(48,'fifty',2),(48,'tech',140),(48,'dd',400),(48,'pog',11),(48,'f40',9),(49,'td',8),(49,'pog',48),(49,'dd',75),(50,'td',7),(50,'dd',210),(50,'pog',7),(50,'tech',18),(51,'td',7),(51,'pog',88),(51,'dd',340),(51,'tech',22),(51,'p30',3),(51,'f40',1),(51,'s3',7),(51,'p3',3),(52,'td',7),(52,'dd',320),(52,'pog',48),(52,'tech',45),(53,'td',7),(53,'dd',470),(53,'pog',15),(53,'s3',110),(53,'f40',2),(53,'tech',22),(54,'td',7),(54,'fifty',1),(54,'pog',128),(54,'p30',24),(54,'dd',210),(54,'tech',45),(54,'f40',9),(54,'p3',110),(55,'td',6),(55,'pog',168),(55,'tech',212),(55,'dd',510),(56,'td',6),(56,'fifty',5),(56,'f40',49),(56,'pog',216),(56,'tech',195),(56,'dd',727),(56,'p30',72),(56,'s3',1),(57,'td',6),(57,'pog',95),(57,'tech',250),(57,'dd',250),(57,'p30',8),(58,'td',6),(58,'fifty',2),(58,'f40',31),(58,'pog',193),(58,'tech',332),(58,'dd',811),(58,'p30',42),(58,'gm',10),(58,'p3',2),(59,'td',6),(59,'dd',550),(59,'pog',28),(59,'tech',55),(59,'f40',1),(59,'p3',2),(60,'td',6);
+INSERT INTO player_stats VALUES
+(60,'pog',177),(60,'p3',150),(60,'dd',95),(60,'tech',35),(60,'s3',85),(61,'td',6),(61,'pog',105),(61,'dd',75),(62,'td',6),(62,'dd',460),(62,'pog',118),(62,'tech',75),(62,'p3',8),(63,'td',6),(63,'fifty',4),(63,'f40',30),(63,'pog',40),(63,'s3',110),(63,'tech',18),(63,'dd',65),(63,'p30',22),(63,'p3',60),(64,'td',6),(64,'fifty',8),(64,'f40',38),(64,'pog',58),(64,'tech',70),(64,'s3',174),(64,'p3',125),(64,'dd',85),(64,'p30',19),(65,'td',5),(65,'fifty',1),(65,'f40',28),(65,'pog',177),(65,'tech',90),(65,'dd',330),(65,'p30',42),(65,'p3',75),(65,'gm',160),(66,'td',5),(66,'pog',182),(66,'dd',710),(66,'tech',65),(66,'gm',22),(66,'p30',2),(66,'p3',100),(67,'td',5),(67,'pog',108),(67,'p3',170),(67,'dd',150),(67,'tech',28),(67,'s3',135),(68,'td',5),(68,'fifty',14),(68,'f40',46),(68,'pog',74),(68,'p30',27),(68,'dd',280),(69,'td',5),(69,'dd',440),(69,'pog',78),(69,'p30',10),(69,'tech',85),(69,'f40',4),(70,'td',5),(70,'fifty',2),(70,'gm',150),(70,'dd',430),(70,'pog',38),(70,'s3',155),(70,'p3',105),(70,'tech',55),(70,'p30',8),(70,'f40',8),(71,'td',5),(71,'pog',48),(71,'p3',125),(71,'dd',120),(71,'tech',60),(72,'td',5),(72,'dd',460),(72,'pog',86),(73,'td',4),(73,'pog',120),(73,'dd',270),(73,'s3',177),(73,'p3',140),(73,'tech',27),(73,'p30',5),(74,'td',4),(74,'pog',136),(74,'dd',660),(74,'p30',10),(74,'tech',45),(74,'s3',8),(75,'td',4),(75,'pog',125),(75,'tech',174),(75,'dd',771);
+INSERT INTO player_stats VALUES
+(75,'p30',8),(75,'f40',1),(75,'s3',6),(76,'td',4),(76,'fifty',3),(76,'f40',20),(76,'pog',68),(76,'dd',470),(76,'p30',21),(76,'gm',280),(76,'tech',50),(77,'td',4),(77,'fifty',1),(77,'s3',292),(77,'pog',108),(77,'p3',270),(77,'dd',125),(77,'p30',18),(77,'tech',55),(77,'f40',10),(77,'gm',240),(78,'td',4),(78,'fifty',1),(78,'gm',75),(78,'dd',115),(78,'s3',130),(78,'tech',12),(78,'f40',5),(79,'td',4),(79,'fifty',4),(79,'s3',245),(79,'f40',26),(79,'pog',115),(79,'p3',350),(79,'dd',210),(79,'p30',43),(79,'tech',36),(80,'td',4),(80,'fifty',4),(80,'f40',36),(80,'pog',52),(80,'gm',250),(80,'dd',160),(80,'p30',12),(80,'s3',174),(81,'td',4),(81,'pog',184),(81,'dd',310),(81,'p3',170),(81,'tech',22),(81,'p30',1),(82,'td',4),(82,'fifty',17),(82,'f40',84),(82,'pog',134),(82,'dd',530),(82,'p30',38),(83,'td',4),(83,'tech',95),(83,'pog',48),(83,'dd',190),(84,'td',4),(84,'gm',680),(84,'pog',47),(84,'dd',210),(85,'td',4),(85,'fifty',1),(85,'gm',210),(85,'pog',68),(85,'dd',370),(85,'p30',10),(85,'f40',7),(85,'tech',55),(86,'td',3),(86,'fifty',1),(86,'dd',410),(86,'pog',28),(86,'f40',6),(86,'tech',55),(86,'s3',155),(87,'td',3),(87,'fifty',11),(87,'f40',58),(87,'pog',71),(87,'tech',85),(87,'dd',95),(87,'p30',33),(87,'p3',85),(88,'td',3),(88,'fifty',5),(88,'f40',33),(88,'pog',145),(88,'dd',530),(88,'p30',51),(88,'p3',170),(88,'s3',150),(88,'tech',35),(89,'td',3),(89,'fifty',16),(89,'s3',275);
+INSERT INTO player_stats VALUES
+(89,'f40',54),(89,'pog',61),(89,'p3',225),(89,'dd',105),(89,'p30',24),(89,'tech',22),(90,'td',3),(90,'fifty',1),(90,'f40',13),(90,'s3',185),(90,'pog',11),(90,'dd',65),(90,'tech',32),(90,'p30',3),(91,'td',3),(91,'fifty',1),(91,'s3',230),(91,'pog',33),(91,'p3',85),(91,'dd',85),(91,'tech',36),(92,'td',3),(92,'fifty',4),(92,'s3',200),(92,'f40',23),(92,'pog',88),(92,'p3',270),(92,'dd',55),(92,'p30',26),(92,'gm',260),(92,'tech',27),(93,'td',3),(93,'fifty',1),(93,'pog',139),(93,'dd',570),(93,'tech',75),(93,'p30',18),(93,'f40',5),(93,'p3',4),(94,'td',3),(94,'fifty',2),(94,'f40',24),(94,'pog',86),(94,'s3',171),(94,'p3',185),(94,'dd',210),(94,'p30',12),(94,'tech',55),(95,'td',3),(95,'pog',68),(95,'s3',165),(95,'p3',155),(95,'dd',110),(95,'f40',6),(96,'td',3),(96,'pog',100),(96,'dd',55),(97,'td',3),(97,'s3',220),(97,'pog',58),(98,'td',3),(98,'gm',270),(98,'pog',92),(98,'p3',225),(98,'dd',470),(98,'p30',6),(98,'f40',4),(98,'s3',145),(99,'td',2),(99,'fifty',3),(99,'f40',11),(99,'pog',72),(99,'p30',20),(99,'dd',35),(99,'s3',155),(99,'tech',10),(99,'p3',105),(100,'td',2),(100,'fifty',2),(100,'pog',78),(100,'p30',14),(100,'p3',155),(100,'dd',45),(100,'s3',148),(100,'gm',170),(100,'tech',15),(101,'td',2),(101,'pog',12),(101,'s3',105),(101,'dd',75),(101,'f40',4),(101,'tech',18),(102,'td',2),(102,'fifty',1),(102,'pog',98),(102,'dd',210),(102,'p30',8),(102,'p3',85),(102,'tech',18),(103,'td',2);
+INSERT INTO player_stats VALUES
+(103,'fifty',5),(103,'s3',245),(103,'f40',28),(103,'pog',68),(103,'p30',28),(103,'p3',195),(103,'dd',45),(103,'tech',27),(104,'td',2),(104,'fifty',6),(104,'f40',48),(104,'pog',77),(104,'dd',320),(104,'p30',19),(104,'p3',125),(104,'s3',185),(104,'tech',75),(105,'td',2),(105,'pog',138),(105,'f40',11),(105,'dd',170),(105,'p30',28),(105,'p3',220),(105,'gm',340),(105,'tech',18),(105,'s3',115),(106,'td',2),(106,'fifty',7),(106,'f40',33),(106,'pog',58),(106,'gm',430),(106,'dd',350),(106,'p30',19),(106,'tech',65),(106,'s3',85),(107,'td',2),(107,'fifty',2),(107,'s3',320),(107,'f40',14),(107,'pog',44),(107,'p30',14),(107,'p3',125),(107,'dd',45),(107,'tech',36),(108,'td',2),(108,'fifty',4),(108,'s3',200),(108,'f40',16),(108,'pog',28),(108,'gm',210),(108,'dd',35),(108,'tech',26),(108,'p3',45),(108,'p30',6),(109,'td',2),(109,'fifty',1),(109,'pog',98),(109,'p3',195),(109,'s3',155),(109,'dd',55),(109,'p30',8),(110,'td',2),(110,'pog',76),(110,'dd',460),(110,'tech',95),(110,'p30',10),(110,'p3',9),(111,'td',2),(111,'dd',240),(111,'pog',23),(112,'td',2),(112,'dd',330),(112,'pog',42),(112,'tech',75),(113,'td',1),(113,'fifty',1),(113,'s3',225),(113,'f40',11),(113,'pog',5),(113,'dd',25),(113,'tech',18),(114,'td',1),(114,'fifty',3),(114,'s3',301),(114,'pog',158),(114,'p3',480),(114,'f40',13),(114,'dd',25),(114,'p30',16),(114,'tech',26),(114,'gm',245),(115,'td',1),(115,'fifty',1),(115,'s3',229),(115,'pog',144),(115,'p3',320),(115,'dd',55),(115,'p30',23),(115,'tech',85),(115,'f40',8);
+INSERT INTO player_stats VALUES
+(116,'td',1),(116,'fifty',1),(116,'s3',207),(116,'pog',68),(116,'p3',165),(116,'dd',25),(116,'p30',12),(116,'tech',15),(117,'td',1),(117,'fifty',2),(117,'s3',226),(117,'f40',11),(117,'pog',14),(117,'dd',25),(117,'tech',12),(118,'td',1),(118,'fifty',1),(118,'gm',400),(118,'pog',48),(118,'f40',9),(118,'dd',55),(118,'p30',10),(118,'tech',16),(119,'td',1),(119,'fifty',1),(119,'pog',226),(119,'p30',15),(119,'dd',95),(119,'tech',20),(119,'p3',100),(120,'td',1),(120,'pog',218),(120,'p3',320),(120,'p30',6),(120,'dd',55),(120,'tech',45),(121,'td',1),(121,'pog',92),(121,'dd',280),(121,'tech',45),(121,'s3',85),(122,'td',1),(122,'pog',108),(122,'tech',70),(122,'p3',174),(122,'dd',25),(122,'s3',125),(123,'td',1),(123,'pog',78),(123,'dd',530),(123,'tech',32),(123,'s3',1),(124,'td',1),(124,'gm',190),(124,'s3',105),(124,'pog',9),(124,'dd',55),(124,'f40',4),(124,'tech',17),(125,'td',1),(125,'pog',33),(125,'dd',85),(125,'s3',90),(125,'tech',8),(126,'td',1),(126,'fifty',2),(126,'f40',13),(126,'pog',63),(126,'dd',85),(126,'tech',40),(126,'p30',8),(127,'td',1),(127,'fifty',9),(127,'f40',56),(127,'pog',59),(127,'p30',20),(127,'dd',120),(128,'td',1),(128,'fifty',9),(128,'f40',38),(128,'pog',26),(128,'dd',95),(128,'p30',6),(129,'td',1),(129,'fifty',11),(129,'f40',48),(129,'pog',56),(129,'dd',290),(129,'p30',18),(129,'tech',55),(130,'td',1),(130,'fifty',3),(130,'f40',9),(130,'pog',62),(130,'s3',165),(130,'dd',12),(131,'td',1),(131,'pog',81),(131,'dd',60),(131,'tech',45);
+INSERT INTO player_stats VALUES
+(132,'fifty',5),(132,'f40',28),(132,'pog',28),(132,'p30',12),(132,'dd',140),(133,'fifty',4),(133,'f40',37),(133,'pog',94),(133,'dd',330),(133,'p30',15),(134,'fifty',1),(134,'s3',269),(134,'pog',171),(134,'p3',385),(134,'dd',55),(134,'p30',18),(134,'tech',22),(134,'f40',8),(135,'s3',288),(135,'pog',16),(135,'p3',55),(135,'dd',25),(136,'fifty',1),(136,'s3',246),(136,'pog',68),(136,'p3',155),(136,'dd',4),(136,'tech',12),(137,'s3',270),(137,'pog',38),(137,'p3',115),(137,'dd',2),(138,'s3',319),(138,'pog',18),(138,'p3',35),(138,'dd',3),(139,'s3',221),(139,'pog',126),(139,'p3',225),(139,'dd',8),(139,'tech',12),(140,'s3',217),(140,'pog',110),(140,'p3',165),(140,'dd',2),(141,'s3',205),(141,'pog',5),(141,'dd',4),(142,'s3',220),(142,'pog',23),(142,'p3',65),(142,'dd',20),(143,'s3',200),(143,'f40',6),(143,'dd',105),(143,'tech',10),(144,'s3',200),(144,'pog',13),(144,'dd',25),(145,'pog',165),(145,'dd',880),(145,'p30',6),(146,'fifty',13),(146,'f40',85),(146,'pog',153),(146,'p30',70),(146,'dd',240),(147,'fifty',3),(147,'f40',23),(147,'pog',94),(147,'dd',690),(147,'tech',55),(147,'p30',12),(148,'fifty',2),(148,'f40',16),(148,'pog',96),(148,'dd',740),(148,'p30',10),(149,'pog',119),(149,'dd',520),(150,'fifty',4),(150,'f40',36),(150,'pog',88),(150,'dd',580),(150,'p30',18),(151,'pog',112),(151,'p3',75),(151,'dd',15),(151,'p30',8),(152,'pog',244),(152,'p3',260),(152,'dd',55),(152,'tech',35),(153,'pog',259),(153,'p3',285),(153,'dd',6),(153,'tech',16),(154,'pog',184),(154,'dd',600),(154,'tech',65);
+INSERT INTO player_stats VALUES
+(154,'p30',2),(155,'pog',143),(155,'p30',14),(155,'dd',85),(156,'fifty',1),(156,'pog',168),(156,'dd',270),(156,'p30',8),(157,'pog',180),(157,'dd',120),(157,'p30',4),(158,'fifty',5),(158,'f40',42),(158,'pog',73),(158,'dd',210),(158,'p30',14),(159,'fifty',1),(159,'f40',28),(159,'pog',68),(159,'dd',170),(159,'p30',12),(160,'fifty',1),(160,'pog',96),(160,'dd',35),(160,'f40',8),(161,'fifty',2),(161,'f40',14),(161,'pog',24),(161,'s3',125),(161,'dd',25),(162,'fifty',1),(162,'s3',207),(162,'pog',58),(162,'p3',105),(162,'f40',9),(163,'s3',240),(163,'pog',78),(163,'p3',174),(163,'dd',35),(164,'pog',160),(164,'p3',275),(164,'s3',186),(164,'dd',8),(165,'pog',128),(165,'p3',250),(165,'s3',196),(165,'tech',75),(166,'pog',132),(166,'p3',255),(166,'s3',174),(166,'dd',16),(166,'tech',35),(167,'fifty',1),(167,'f40',6),(167,'pog',78),(167,'s3',145),(167,'dd',8),(168,'tech',1),(168,'pog',98),(168,'p3',195),(168,'s3',165),(168,'dd',55),(169,'fifty',1),(169,'s3',218),(169,'pog',88),(169,'p3',185),(169,'dd',35),(169,'tech',26),(170,'pog',147),(170,'dd',120),(170,'tech',35),(171,'pog',112),(171,'tech',45),(171,'p3',85),(171,'dd',16),(172,'pog',62),(172,'tech',75),(172,'dd',25),(172,'p3',75),(173,'tech',85),(173,'pog',68),(173,'s3',125),(173,'dd',30),(174,'tech',95),(174,'pog',48),(174,'dd',55),(175,'tech',125),(175,'pog',144),(175,'dd',400),(175,'s3',5),(176,'fifty',1),(176,'tech',128),(176,'pog',78),(176,'p3',125),(177,'tech',115),(177,'pog',113),(177,'dd',460),(178,'tech',105),(178,'pog',88),(178,'dd',140);
+INSERT INTO player_stats VALUES
+(179,'pog',94),(179,'dd',670),(179,'tech',95),(180,'pog',95),(180,'dd',430),(180,'tech',105),(180,'p30',8),(181,'pog',110),(181,'dd',210),(182,'pog',120),(182,'p3',174),(182,'s3',190),(183,'pog',140),(183,'p3',145),(183,'s3',125),(184,'pog',47),(184,'p3',75),(184,'s3',115),(184,'dd',65),(185,'pog',126),(185,'p3',95),(185,'s3',85),(186,'pog',170),(186,'dd',360),(187,'s3',267),(187,'pog',40),(187,'p3',115),(188,'s3',257),(188,'pog',28),(189,'s3',243),(189,'pog',48),(189,'p3',115),(189,'f40',5),(190,'pog',88),(190,'dd',190),(190,'s3',187),(190,'tech',26),(190,'f40',2),(191,'gm',250),(191,'f40',7),(191,'pog',6),(191,'dd',100),(191,'tech',12),(192,'gm',390),(192,'dd',25),(193,'gm',310),(193,'dd',140),(194,'gm',210),(194,'pog',22),(194,'f40',4),(194,'dd',16),(195,'gm',250),(195,'pog',28),(195,'dd',320),(195,'p30',6),(195,'f40',2),(195,'s3',1),(196,'gm',310),(196,'pog',9),(197,'gm',280),(197,'pog',48),(197,'dd',140),(197,'s3',145),(197,'f40',4),(197,'tech',26),(198,'gm',3),(198,'pog',153),(198,'dd',320),(199,'gm',150),(199,'pog',89),(199,'dd',460),(199,'p30',6),(199,'tech',26),(200,'fifty',1),(200,'pog',170),(200,'p3',275),(200,'dd',190),(200,'p30',28),(200,'tech',65),(200,'f40',10),(201,'tech',317),(201,'pog',177),(201,'dd',240),(201,'p3',165),(202,'dd',440),(202,'pog',128),(202,'tech',85),(202,'s3',2),(203,'pog',146),(203,'p3',235),(203,'s3',155),(203,'dd',55),(203,'p30',6),(204,'pog',115),(204,'p30',8),(204,'dd',16),(205,'pog',142),(206,'fifty',1),(206,'f40',14),(206,'s3',196);
+INSERT INTO player_stats VALUES
+(206,'pog',20),(207,'fifty',2),(207,'dd',270),(207,'f40',6),(208,'fifty',1),(208,'f40',9),(208,'s3',245),(208,'pog',28),(208,'dd',6),(209,'pog',112),(209,'p3',250),(209,'dd',55),(209,'p30',20),(209,'f40',10),(209,'tech',27),(209,'s3',155),(210,'pog',88),(210,'p3',174),(210,'s3',185),(210,'dd',16),(211,'pog',48),(211,'s3',145),(211,'dd',12),(211,'gm',1),(212,'dd',270),(212,'pog',28),(213,'s3',174),(213,'pog',18),(213,'dd',16),(214,'td',4),(214,'dd',130),(214,'pog',6),(215,'pog',11),(215,'dd',35),(216,'pog',33),(216,'dd',35),(216,'s3',105),(216,'p30',3),(217,'fifty',1),(217,'s3',205),(217,'pog',28),(217,'p3',75),(217,'f40',6),(218,'dd',510),(218,'pog',38),(218,'tech',35),(219,'dd',310),(219,'pog',48),(220,'dd',270),(221,'pog',118),(221,'dd',150),(222,'dd',580),(222,'pog',78),(223,'dd',430),(223,'pog',64),(224,'dd',280),(224,'pog',88),(225,'dd',570),(225,'pog',100),(226,'pog',38),(226,'s3',145),(226,'dd',12),(227,'pog',33),(227,'dd',110),(227,'tech',48),(227,'f40',3),(227,'s3',110),(228,'td',5),(228,'pog',105),(228,'dd',240),(228,'p30',12),(229,'pog',24),(229,'dd',130),(230,'dd',120),(231,'pog',51),(231,'dd',20),(232,'pog',84),(232,'dd',420),(233,'pog',80),(233,'p3',130),(233,'dd',25),(234,'pog',24),(234,'dd',130),(235,'dd',320),(235,'pog',41);
+
+  </script>
+  <!-- __HOOPDARTS_SQL_END__ -->
 
   <script type="text/babel" data-presets="react">
     const { useState, useEffect, useMemo, useRef, useCallback } = React;
@@ -138,7 +262,11 @@
     /* ------------------------------------------------------------------ */
     const START_SCORE   = 501;
     const CHECKOUT_MIN  = -10;  // landing in [-10, 0] wins; below -10 busts
-    const THROW_CAP     = 180;  // max value of a single throw (perfect dart)
+    const MAX_VISIT     = 180;  // highest total a real 3-dart visit can score
+    // Visit totals that are impossible in real darts: anything over 180, plus
+    // the in-range "bogey" numbers below. A stat landing on any of them scores 0.
+    const BOGEY_SCORES  = new Set([163, 166, 169, 172, 173, 175, 176, 178, 179]);
+    const visitValue    = (raw) => (raw > MAX_VISIT || BOGEY_SCORES.has(raw) ? 0 : raw);
     const MAX_LIVES     = 3;
     const DAILY_PREFIX  = 'hoopdarts-daily-';
 
@@ -147,7 +275,7 @@
         id: 'td', key: 'td', emoji: '📊',
         name: 'All-Time Regular Season Triple-Doubles',
         short: 'Triple-Doubles',
-        desc: 'Career regular-season triple-doubles. Westbrook (203) and Big O (181) are haymakers — the checkout zone belongs to glue guys with 1 or 2.',
+        desc: 'Career regular-season triple-doubles. Westbrook (203) and Big O (181) are unscoreable now — Jokic and Magic are the real haymakers.',
       },
       {
         id: 'fifty', key: 'fifty', emoji: '🔥',
@@ -156,46 +284,40 @@
         desc: 'Regular-season games with 50+ points. Wilt sits at a monstrous 118 — one-night wonders are your finishing darts.',
       },
       {
-        id: 'threes', key: 'threes', emoji: '🎯',
-        name: 'Career Seasons with 200+ Three-Pointers',
-        short: '200+ 3PT Seasons',
-        desc: 'Seasons with 200 or more made threes. Splash brothers stack these up — most big men throw a brick (0), which burns the throw.',
-      },
-      {
         id: 'pog', key: 'pog', emoji: '🎬',
         name: 'All-Time Playoff Games Played',
         short: 'Playoff Games',
-        desc: 'Career playoff appearances. LeBron (292) and ring-chasing role players like Derek Fisher and Robert Horry tower here — young stars barely register.',
+        desc: "Career playoff appearances. LeBron's 292 is too big to score — ring-chasing role players with double-digit runs are gold.",
       },
       {
         id: 'tech', key: 'tech', emoji: '🟥',
         name: 'All-Time Regular Season Technical Fouls',
         short: 'Technical Fouls',
-        desc: 'Career technicals. Sheed (317), the Mailman and Barkley blow past the cap — choirboys like Mike Conley (1) are surgical checkout darts.',
+        desc: 'Career technicals. Sheed (317), the Mailman and Barkley are too hot to score — mid-tier hotheads do the damage, and Mike Conley (1) is a surgical dart.',
       },
       {
         id: 's3', key: 's3', emoji: '🌧️',
         name: 'Highest Single-Season 3-Pointers Made',
         short: 'Best 3PM Season',
-        desc: "Each player's best single-season made-threes total. Curry's 402 smashes the 180 cap — old-school bigs throw bricks.",
+        desc: "Each player's best single-season made-threes total. Curry's 402 is an impossible visit — it scores 0! Mid-volume shooters are the real weapons.",
       },
       {
         id: 'f40', key: 'f40', emoji: '💥',
         name: 'All-Time 40+ Point Regular Season Games',
         short: '40-Point Games',
-        desc: 'Career regular-season 40-point games. Wilt (271) and MJ (173) cap out at 180 — secondary stars land the soft finishing blows.',
+        desc: "Career regular-season 40-point games. Wilt's 271 scores nothing — secondary stars land the heavy, legal blows.",
       },
       {
         id: 'p3', key: 'p3', emoji: '☔',
         name: 'All-Time Career Playoff 3-Pointers Made',
         short: 'Playoff 3PM',
-        desc: 'Career playoff threes. Deep-run shooters — Curry, Klay, Ray Allen — rain numbers here; one-series wonders are your small darts.',
+        desc: "Career playoff threes. Curry's 730 is way past 180 — worthless! Mid-volume playoff shooters rule this board.",
       },
       {
         id: 'dd', key: 'dd', emoji: '🧮',
         name: 'All-Time Career Double-Doubles',
         short: 'Double-Doubles',
-        desc: 'Career regular-season double-doubles. Nearly every legendary big caps at 180 — pick guards and wings carefully to land the zone.',
+        desc: 'Career regular-season double-doubles. Every legendary big blows past 180 and scores 0 — guards and wings are the heavy artillery.',
       },
       {
         id: 'p30', key: 'p30', emoji: '🌟',
@@ -207,311 +329,119 @@
         id: 'gm', key: 'gm', emoji: '🩼',
         name: 'Career Regular Season Games Missed',
         short: 'Games Missed',
-        desc: 'Approximate career games missed for prominent stars — the availability metric. Bill Walton (680) and Grant Hill loom large; iron men like A.C. Green (3) barely missed a beat.',
+        desc: 'Approximate career games missed for prominent stars. The famously fragile (Walton, Grant Hill, Embiid) are too broken to score — moderately banged-up stars carry you. Hard mode!',
       },
     ];
 
     /* ------------------------------------------------------------------ */
-    /* Player database                                                     */
+    /* Player database — SQL                                               */
     /*                                                                     */
-    /* Two tiers:                                                          */
-    /*  1. CURATED — stars & legends with stat values across the 11        */
-    /*     categories (close approximations, tuned for gameplay).          */
-    /*  2. EXTRA_NAMES — a deep pool of iconic players from every era so   */
-    /*     autocomplete recognizes 1000+ names. Players outside the        */
-    /*     curated core count as 0 ("no tracked value") in any category.   */
-    /*                                                                     */
-    /* Stat keys: td=triple-doubles, fifty=50-pt games, threes=200+ 3PM    */
-    /* seasons, pog=playoff games, tech=technical fouls, s3=best single-   */
-    /* season 3PM, f40=40-pt games, p3=playoff 3PM, dd=double-doubles,     */
-    /* p30=30-pt playoff games, gm=games missed (tracked for selected      */
-    /* stars only).                                                        */
+    /* The canonical dataset is data/hoopdarts.sql (a copy is embedded in  */
+    /* the #hoopdarts-sql tag). At startup it is executed inside a real    */
+    /* in-browser SQLite engine (sql.js / WebAssembly) and the game issues */
+    /* live SQL queries for autocomplete and per-throw stat retrieval. If  */
+    /* WASM can't load, a lightweight parser builds the same dataset in    */
+    /* memory from the identical SQL text.                                 */
+    /* Stat keys: td, fifty, pog, tech, s3, f40, p3, dd, p30, gm.          */
     /* ------------------------------------------------------------------ */
-    const C = (name, stats) => ({ name, stats });
+    const SQL_CDN = 'https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/';
 
-    const CURATED = [
-      C('Russell Westbrook', { td: 203, fifty: 5, threes: 1, s3: 200, f40: 28, pog: 115, tech: 115, p3: 150, dd: 560, p30: 25 }),
-      C('Oscar Robertson', { td: 181, fifty: 3, f40: 55, pog: 86, dd: 680, p30: 27 }),
-      C('Nikola Jokic', { td: 167, fifty: 5, pog: 81, tech: 75, s3: 112, f40: 22, p3: 130, dd: 600, p30: 38 }),
-      C('Magic Johnson', { td: 138, pog: 190, dd: 530, p30: 32, f40: 8 }),
-      C('LeBron James', { td: 122, fifty: 15, f40: 78, pog: 292, tech: 85, s3: 149, p3: 484, dd: 620, p30: 137 }),
-      C('Jason Kidd', { td: 107, pog: 158, dd: 530, s3: 145, p3: 220, tech: 60, p30: 5 }),
-      C('Luka Doncic', { td: 85, fifty: 13, threes: 1, s3: 284, f40: 55, pog: 66, tech: 80, p3: 160, dd: 320, p30: 42 }),
-      C('James Harden', { td: 82, fifty: 23, threes: 7, s3: 378, f40: 105, pog: 160, tech: 125, p3: 440, dd: 350, p30: 52 }),
-      C('Wilt Chamberlain', { td: 78, fifty: 118, f40: 271, pog: 160, dd: 968, p30: 38 }),
-      C('Domantas Sabonis', { td: 64, dd: 470, pog: 27, tech: 40, f40: 1 }),
-      C('Larry Bird', { td: 59, fifty: 4, f40: 47, pog: 164, tech: 55, s3: 98, p3: 80, dd: 510, p30: 34 }),
-      C('Giannis Antetokounmpo', { td: 57, fifty: 7, f40: 52, pog: 88, tech: 55, s3: 66, dd: 560, p30: 48, p3: 55, gm: 120 }),
-      C('Fat Lever', { td: 43, dd: 230, pog: 47 }),
-      C('Draymond Green', { td: 42, pog: 166, tech: 170, dd: 240, p3: 190, s3: 55, p30: 1 }),
-      C('Ben Simmons', { td: 34, gm: 280, pog: 34, dd: 230, tech: 35, s3: 2 }),
-      C('Bob Cousy', { td: 33, pog: 109, dd: 400 }),
-      C('Rajon Rondo', { td: 32, pog: 134, dd: 300, tech: 55, p30: 2, p3: 75, s3: 33 }),
-      C('John Havlicek', { td: 30, fifty: 1, pog: 172, dd: 280, p30: 22, f40: 13 }),
-      C('Grant Hill', { td: 29, gm: 510, pog: 38, dd: 260, f40: 4, tech: 30 }),
-      C('Michael Jordan', { td: 28, fifty: 31, f40: 173, pog: 179, tech: 50, s3: 111, p3: 148, dd: 230, p30: 109 }),
-      C('Clyde Drexler', { td: 25, fifty: 1, pog: 145, f40: 20, dd: 350, p30: 22, p3: 130 }),
-      C('Kevin Durant', { td: 24, fifty: 9, f40: 76, pog: 166, tech: 145, s3: 192, p3: 340, dd: 310, p30: 87, gm: 210 }),
-      C('Chris Paul', { td: 23, pog: 149, tech: 105, s3: 165, p3: 245, dd: 500, p30: 10, f40: 4 }),
-      C('Kareem Abdul-Jabbar', { td: 21, fifty: 10, f40: 72, pog: 237, dd: 833, p30: 75, s3: 1 }),
-      C('Kobe Bryant', { td: 21, fifty: 25, f40: 122, pog: 220, tech: 100, s3: 148, p3: 292, dd: 200, p30: 88 }),
-      C('Charles Barkley', { td: 20, fifty: 3, f40: 24, pog: 123, tech: 329, dd: 690, p30: 28, p3: 95 }),
-      C('Scottie Pippen', { td: 17, pog: 208, tech: 85, p3: 195, dd: 240, p30: 8, f40: 3 }),
-      C('Kyle Lowry', { td: 17, threes: 1, pog: 138, tech: 90, s3: 188, p3: 240, dd: 190, p30: 4, f40: 2 }),
-      C('Kevin Garnett', { td: 17, pog: 143, tech: 170, dd: 740, p30: 12, f40: 4, p3: 14 }),
-      C('Walt Frazier', { td: 17, fifty: 1, pog: 93, dd: 280, p30: 14 }),
-      C('Hakeem Olajuwon', { td: 16, fifty: 1, f40: 20, pog: 145, dd: 770, p30: 50, tech: 80, p3: 5 }),
-      C('David Robinson', { td: 14, fifty: 3, f40: 28, pog: 123, dd: 590, p30: 14 }),
-      C('Trae Young', { td: 14, fifty: 2, threes: 2, s3: 233, f40: 20, pog: 16, tech: 65, p3: 65, dd: 220, p30: 8 }),
-      C('Tyrese Haliburton', { td: 14, threes: 1, s3: 225, pog: 38, dd: 120, p30: 4, tech: 5, f40: 3, p3: 85 }),
-      C('Julius Erving', { td: 13, fifty: 3, f40: 28, pog: 141, dd: 380, p30: 32 }),
-      C('Penny Hardaway', { td: 13, fifty: 1, pog: 58, gm: 310, dd: 140, p30: 10, f40: 5 }),
-      C('Cade Cunningham', { td: 13, f40: 7, s3: 125, pog: 6, dd: 85, tech: 22, p30: 1 }),
-      C('Dejounte Murray', { td: 13, s3: 140, pog: 18, dd: 150, tech: 20 }),
-      C('Lamar Odom', { td: 12, pog: 92, dd: 230, tech: 35 }),
-      C('Josh Giddey', { td: 12, pog: 16, dd: 130, s3: 95 }),
-      C('John Wall', { td: 12, gm: 350, pog: 33, dd: 120, tech: 36, s3: 95 }),
-      C('Tim Duncan', { td: 11, fifty: 1, pog: 251, tech: 75, dd: 841, p30: 48, f40: 6, s3: 10, p3: 14 }),
-      C('Stephen Curry', { td: 11, fifty: 14, threes: 12, s3: 402, f40: 58, pog: 168, tech: 32, p3: 730, dd: 125, p30: 58 }),
-      C('Elfrid Payton', { td: 11, dd: 110, pog: 4 }),
-      C('Ja Morant', { td: 10, fifty: 1, f40: 11, pog: 13, gm: 140, s3: 115, dd: 85, tech: 28, p30: 4 }),
-      C('LaMelo Ball', { td: 10, threes: 1, s3: 220, gm: 170, dd: 100, tech: 26, f40: 6 }),
-      C('Isiah Thomas', { td: 9, pog: 111, dd: 200, p30: 12, tech: 55, p3: 35 }),
-      C('DeMarcus Cousins', { td: 8, fifty: 2, tech: 140, dd: 400, pog: 11, f40: 9 }),
-      C('Evan Turner', { td: 8, pog: 48, dd: 75 }),
-      C('Alperen Sengun', { td: 7, dd: 210, pog: 7, tech: 18 }),
-      C('Bam Adebayo', { td: 7, pog: 88, dd: 340, tech: 22, p30: 3, f40: 1, s3: 7, p3: 3 }),
-      C('Joakim Noah', { td: 7, dd: 320, pog: 48, tech: 45 }),
-      C('Nikola Vucevic', { td: 7, dd: 470, pog: 15, s3: 110, f40: 2, tech: 22 }),
-      C('Jimmy Butler', { td: 7, fifty: 1, pog: 128, p30: 24, dd: 210, tech: 45, f40: 9, p3: 110 }),
-      C('Dennis Rodman', { td: 6, pog: 169, tech: 212, dd: 510 }),
-      C("Shaquille O'Neal", { td: 6, fifty: 5, f40: 49, pog: 216, tech: 195, dd: 727, p30: 72, s3: 1 }),
-      C('Gary Payton', { td: 6, pog: 95, tech: 250, dd: 250, p30: 8 }),
-      C('Karl Malone', { td: 6, fifty: 2, f40: 31, pog: 193, tech: 332, dd: 811, p30: 42, gm: 10, p3: 2 }),
-      C('Andre Drummond', { td: 6, dd: 550, pog: 28, tech: 55, f40: 1, p3: 2 }),
-      C('Andre Iguodala', { td: 6, pog: 177, p3: 150, dd: 95, tech: 35, s3: 85 }),
-      C('Boris Diaw', { td: 6, pog: 105, dd: 75 }),
-      C('Vlade Divac', { td: 6, dd: 460, pog: 118, tech: 75, p3: 8 }),
-      C('Shai Gilgeous-Alexander', { td: 6, fifty: 4, f40: 30, pog: 40, s3: 110, tech: 18, dd: 65, p30: 22, p3: 60 }),
-      C('Devin Booker', { td: 6, fifty: 8, f40: 38, pog: 58, tech: 70, s3: 174, p3: 125, dd: 85, p30: 19 }),
-      C('Dwyane Wade', { td: 5, fifty: 1, f40: 28, pog: 177, tech: 90, dd: 330, p30: 42, p3: 75, gm: 160 }),
-      C('John Stockton', { td: 5, pog: 182, dd: 710, tech: 65, gm: 22, p30: 2, p3: 100 }),
-      C('Jrue Holiday', { td: 5, pog: 108, p3: 170, dd: 150, tech: 28, s3: 135 }),
-      C('Rick Barry', { td: 5, fifty: 14, f40: 46, pog: 74, p30: 27, dd: 280 }),
-      C('Chris Webber', { td: 5, dd: 440, pog: 78, p30: 10, tech: 85, f40: 4 }),
-      C('Karl-Anthony Towns', { td: 5, fifty: 2, gm: 150, dd: 430, pog: 38, s3: 155, p3: 105, tech: 55, p30: 8, f40: 8 }),
-      C('Baron Davis', { td: 5, pog: 48, p3: 125, dd: 120, tech: 60 }),
-      C('Dave Cowens', { td: 5, dd: 460, pog: 86 }),
-      C('Steve Nash', { td: 4, pog: 120, dd: 270, s3: 179, p3: 140, tech: 27, p30: 5 }),
-      C('Pau Gasol', { td: 4, pog: 136, dd: 660, p30: 10, tech: 45, s3: 8 }),
-      C('Dwight Howard', { td: 4, pog: 125, tech: 175, dd: 771, p30: 8, f40: 1, s3: 6 }),
-      C('Anthony Davis', { td: 4, fifty: 3, f40: 20, pog: 68, dd: 470, p30: 21, gm: 280, tech: 50 }),
-      C('Paul George', { td: 4, fifty: 1, threes: 3, s3: 292, pog: 108, p3: 270, dd: 125, p30: 18, tech: 55, f40: 10, gm: 240 }),
-      C('Victor Wembanyama', { td: 4, fifty: 1, gm: 75, dd: 115, s3: 130, tech: 12, f40: 5 }),
-      C('Jayson Tatum', { td: 4, fifty: 4, threes: 2, s3: 245, f40: 26, pog: 115, p3: 350, dd: 210, p30: 43, tech: 36 }),
-      C('Tracy McGrady', { td: 4, fifty: 4, f40: 36, pog: 52, gm: 250, dd: 160, p30: 12, s3: 175 }),
-      C('Al Horford', { td: 4, pog: 184, dd: 310, p3: 170, tech: 22, p30: 1 }),
-      C('Elgin Baylor', { td: 4, fifty: 17, f40: 84, pog: 134, dd: 530, p30: 38 }),
-      C('Anthony Mason', { td: 4, tech: 95, pog: 48, dd: 190 }),
-      C('Bill Walton', { td: 4, gm: 680, pog: 47, dd: 210 }),
-      C('Blake Griffin', { td: 4, fifty: 1, gm: 210, pog: 68, dd: 370, p30: 10, f40: 7, tech: 55 }),
-      C('Julius Randle', { td: 3, fifty: 1, dd: 410, pog: 28, f40: 6, tech: 55, s3: 155 }),
-      C('Allen Iverson', { td: 3, fifty: 11, f40: 58, pog: 71, tech: 85, dd: 95, p30: 33, p3: 85 }),
-      C('Dirk Nowitzki', { td: 3, fifty: 5, f40: 33, pog: 145, dd: 530, p30: 51, p3: 170, s3: 150, tech: 35 }),
-      C('Damian Lillard', { td: 3, fifty: 16, threes: 7, s3: 275, f40: 54, pog: 61, p3: 225, dd: 105, p30: 24, tech: 22 }),
-      C("De'Aaron Fox", { td: 3, fifty: 1, f40: 13, s3: 185, pog: 11, dd: 65, tech: 32, p30: 3 }),
-      C("D'Angelo Russell", { td: 3, fifty: 1, threes: 1, s3: 230, pog: 33, p3: 85, dd: 85, tech: 36 }),
-      C('Kyrie Irving', { td: 3, fifty: 4, threes: 1, s3: 200, f40: 23, pog: 88, p3: 270, dd: 55, p30: 26, gm: 260, tech: 27 }),
-      C('Patrick Ewing', { td: 3, fifty: 1, pog: 139, dd: 570, tech: 75, p30: 18, f40: 5, p3: 4 }),
-      C('Vince Carter', { td: 3, fifty: 2, f40: 24, pog: 86, s3: 172, p3: 185, dd: 210, p30: 12, tech: 55 }),
-      C('Tim Hardaway', { td: 3, pog: 68, s3: 165, p3: 155, dd: 110, f40: 6 }),
-      C('Toni Kukoc', { td: 3, pog: 100, dd: 55 }),
-      C('Mookie Blaylock', { td: 3, threes: 1, s3: 220, pog: 58 }),
-      C('Kevin Love', { td: 3, gm: 270, pog: 92, p3: 225, dd: 470, p30: 6, f40: 4, s3: 145 }),
-      C('Jalen Brunson', { td: 2, fifty: 3, f40: 11, pog: 72, p30: 20, dd: 35, s3: 155, tech: 10, p3: 105 }),
-      C('Jamal Murray', { td: 2, fifty: 2, pog: 78, p30: 14, p3: 155, dd: 45, s3: 148, gm: 170, tech: 15 }),
-      C('Paolo Banchero', { td: 2, pog: 12, s3: 105, dd: 75, f40: 4, tech: 18 }),
-      C('Pascal Siakam', { td: 2, fifty: 1, pog: 98, dd: 210, p30: 8, p3: 85, tech: 18 }),
-      C('Donovan Mitchell', { td: 2, fifty: 5, threes: 3, s3: 245, f40: 28, pog: 68, p30: 28, p3: 195, dd: 45, tech: 27 }),
-      C('Carmelo Anthony', { td: 2, fifty: 6, f40: 48, pog: 77, dd: 320, p30: 19, p3: 125, s3: 185, tech: 75 }),
-      C('Kawhi Leonard', { td: 2, pog: 138, f40: 11, dd: 170, p30: 28, p3: 220, gm: 340, tech: 18, s3: 115 }),
-      C('Joel Embiid', { td: 2, fifty: 7, f40: 33, pog: 58, gm: 430, dd: 350, p30: 19, tech: 65, s3: 85 }),
-      C('Anthony Edwards', { td: 2, fifty: 2, threes: 1, s3: 320, f40: 14, pog: 44, p30: 14, p3: 125, dd: 45, tech: 36 }),
-      C('Bradley Beal', { td: 2, fifty: 4, threes: 1, s3: 200, f40: 16, pog: 28, gm: 210, dd: 35, tech: 26, p3: 45, p30: 6 }),
-      C('Khris Middleton', { td: 2, fifty: 1, pog: 98, p3: 195, s3: 155, dd: 55, p30: 8 }),
-      C('Shawn Kemp', { td: 2, pog: 76, dd: 460, tech: 95, p30: 10, p3: 9 }),
-      C('Evan Mobley', { td: 2, dd: 240, pog: 23 }),
-      C('Derrick Coleman', { td: 2, dd: 330, pog: 42, tech: 75 }),
-      C('Zach LaVine', { td: 1, fifty: 1, threes: 3, s3: 225, f40: 11, pog: 5, dd: 25, tech: 18 }),
-      C('Klay Thompson', { td: 1, fifty: 3, threes: 9, s3: 301, pog: 158, p3: 480, f40: 13, dd: 25, p30: 16, tech: 26, gm: 245 }),
-      C('Reggie Miller', { td: 1, fifty: 1, threes: 2, s3: 229, pog: 144, p3: 320, dd: 55, p30: 23, tech: 85, f40: 8 }),
-      C('CJ McCollum', { td: 1, fifty: 1, threes: 2, s3: 207, pog: 68, p3: 165, dd: 25, p30: 12, tech: 15 }),
-      C('Kemba Walker', { td: 1, fifty: 2, threes: 1, s3: 226, f40: 11, pog: 14, dd: 25, tech: 12 }),
-      C('Derrick Rose', { td: 1, fifty: 1, gm: 400, pog: 48, f40: 9, dd: 55, p30: 10, tech: 16 }),
-      C('Tony Parker', { td: 1, fifty: 1, pog: 226, p30: 15, dd: 95, tech: 20, p3: 100 }),
-      C('Manu Ginobili', { td: 1, pog: 218, p3: 320, p30: 6, dd: 55, tech: 45 }),
-      C('Marc Gasol', { td: 1, pog: 92, dd: 280, tech: 45, s3: 85 }),
-      C('Marcus Smart', { td: 1, pog: 108, tech: 70, p3: 175, dd: 25, s3: 125 }),
-      C('Rudy Gobert', { td: 1, pog: 78, dd: 530, tech: 32, s3: 1 }),
-      C('Brandon Ingram', { td: 1, gm: 190, s3: 105, pog: 9, dd: 55, f40: 4, tech: 17 }),
-      C('Chet Holmgren', { td: 1, pog: 33, dd: 85, s3: 90, tech: 8 }),
-      C('DeMar DeRozan', { td: 1, fifty: 2, f40: 13, pog: 63, dd: 85, tech: 40, p30: 8 }),
-      C('George Gervin', { td: 1, fifty: 9, f40: 56, pog: 59, p30: 20, dd: 120 }),
-      C('Pete Maravich', { td: 1, fifty: 9, f40: 38, pog: 26, dd: 95, p30: 6 }),
-      C('Dominique Wilkins', { td: 1, fifty: 11, f40: 48, pog: 56, dd: 290, p30: 18, tech: 55 }),
-      C('Jamal Crawford', { td: 1, fifty: 3, f40: 9, pog: 62, s3: 165, dd: 12 }),
-      C('Doc Rivers', { td: 1, pog: 81, dd: 60, tech: 45 }),
-      C('Bernard King', { fifty: 5, f40: 28, pog: 28, p30: 12, dd: 140 }),
-      C('Bob McAdoo', { fifty: 4, f40: 37, pog: 94, dd: 330, p30: 15 }),
-      C('Ray Allen', { fifty: 1, threes: 4, s3: 269, pog: 171, p3: 385, dd: 55, p30: 18, tech: 22, f40: 8 }),
-      C('Buddy Hield', { threes: 6, s3: 288, pog: 16, p3: 55, dd: 25 }),
-      C('Eric Gordon', { fifty: 1, threes: 2, s3: 246, pog: 68, p3: 155, dd: 4, tech: 12 }),
-      C('Duncan Robinson', { threes: 2, s3: 270, pog: 38, p3: 115, dd: 2 }),
-      C('Malik Beasley', { threes: 2, s3: 319, pog: 18, p3: 35, dd: 3 }),
-      C('Kyle Korver', { threes: 1, s3: 221, pog: 126, p3: 225, dd: 8, tech: 12 }),
-      C('JJ Redick', { threes: 1, s3: 217, pog: 110, p3: 165, dd: 2 }),
-      C('Anfernee Simons', { threes: 1, s3: 205, pog: 5, dd: 4 }),
-      C('Desmond Bane', { threes: 1, s3: 220, pog: 23, p3: 65, dd: 20 }),
-      C('Lauri Markkanen', { threes: 1, s3: 200, f40: 6, dd: 105, tech: 10 }),
-      C('Keegan Murray', { threes: 1, s3: 200, pog: 13, dd: 25 }),
-      C('Bill Russell', { pog: 165, dd: 880, p30: 6 }),
-      C('Jerry West', { fifty: 13, f40: 85, pog: 153, p30: 70, dd: 240 }),
-      C('Moses Malone', { fifty: 3, f40: 23, pog: 94, dd: 690, tech: 55, p30: 12 }),
-      C('Elvin Hayes', { fifty: 2, f40: 16, pog: 96, dd: 740, p30: 10 }),
-      C('Wes Unseld', { pog: 119, dd: 520 }),
-      C('Bob Pettit', { fifty: 4, f40: 36, pog: 88, dd: 580, p30: 18 }),
-      C('Joe Dumars', { pog: 112, p3: 75, dd: 15, p30: 8 }),
-      C('Robert Horry', { pog: 244, p3: 260, dd: 55, tech: 35 }),
-      C('Derek Fisher', { pog: 259, p3: 285, dd: 6, tech: 16 }),
-      C('Robert Parish', { pog: 184, dd: 600, tech: 65, p30: 2 }),
-      C('James Worthy', { pog: 143, p30: 14, dd: 85 }),
-      C('Kevin McHale', { fifty: 1, pog: 169, dd: 270, p30: 8 }),
-      C('Dennis Johnson', { pog: 180, dd: 120, p30: 4 }),
-      C('Adrian Dantley', { fifty: 5, f40: 42, pog: 73, dd: 210, p30: 14 }),
-      C('Alex English', { fifty: 1, f40: 28, pog: 68, dd: 170, p30: 12 }),
-      C('Chris Mullin', { fifty: 1, pog: 96, dd: 35, f40: 8 }),
-      C('Mitch Richmond', { fifty: 2, f40: 14, pog: 24, s3: 125, dd: 25 }),
-      C('Glen Rice', { fifty: 1, threes: 1, s3: 207, pog: 58, p3: 105, f40: 9 }),
-      C('Peja Stojakovic', { threes: 1, s3: 240, pog: 78, p3: 175, dd: 35 }),
-      C('Danny Green', { pog: 160, p3: 275, s3: 186, dd: 8 }),
-      C('JR Smith', { pog: 128, p3: 250, s3: 196, tech: 75 }),
-      C('Jason Terry', { pog: 132, p3: 255, s3: 175, dd: 16, tech: 35 }),
-      C('Lou Williams', { fifty: 1, f40: 6, pog: 78, s3: 145, dd: 8 }),
-      C('Mike Conley', { tech: 1, pog: 98, p3: 195, s3: 165, dd: 55 }),
-      C('Fred VanVleet', { fifty: 1, threes: 1, s3: 218, pog: 88, p3: 185, dd: 35, tech: 26 }),
-      C('Udonis Haslem', { pog: 147, dd: 120, tech: 35 }),
-      C('PJ Tucker', { pog: 112, tech: 45, p3: 85, dd: 16 }),
-      C('Patrick Beverley', { pog: 62, tech: 75, dd: 25, p3: 75 }),
-      C('Marcus Morris', { tech: 85, pog: 68, s3: 125, dd: 30 }),
-      C('Markieff Morris', { tech: 95, pog: 48, dd: 55 }),
-      C('Charles Oakley', { tech: 125, pog: 144, dd: 400, s3: 5 }),
-      C('Vernon Maxwell', { fifty: 1, tech: 128, pog: 78, p3: 125 }),
-      C('Bill Laimbeer', { tech: 115, pog: 113, dd: 460 }),
-      C('Rick Mahorn', { tech: 105, pog: 88, dd: 140 }),
-      C('Dikembe Mutombo', { pog: 94, dd: 670, tech: 95 }),
-      C('Alonzo Mourning', { pog: 95, dd: 430, tech: 105, p30: 8 }),
-      C('Detlef Schrempf', { pog: 110, dd: 210 }),
-      C('Dan Majerle', { pog: 120, p3: 175, s3: 190 }),
-      C('Jeff Hornacek', { pog: 140, p3: 145, s3: 125 }),
-      C('Mark Price', { pog: 47, p3: 75, s3: 115, dd: 65 }),
-      C('Steve Kerr', { pog: 126, p3: 95, s3: 85 }),
-      C('Horace Grant', { pog: 170, dd: 360 }),
-      C('Dennis Scott', { threes: 1, s3: 267, pog: 40, p3: 115 }),
-      C('George McCloud', { threes: 1, s3: 257, pog: 28 }),
-      C('Jason Richardson', { threes: 1, s3: 243, pog: 48, p3: 115, f40: 5 }),
-      C('Brook Lopez', { pog: 88, dd: 190, s3: 187, tech: 26, f40: 2 }),
-      C('Zion Williamson', { gm: 250, f40: 7, pog: 6, dd: 100, tech: 12 }),
-      C('Greg Oden', { gm: 390, dd: 25 }),
-      C('Sam Bowie', { gm: 310, dd: 140 }),
-      C('Brandon Roy', { gm: 210, pog: 22, f40: 4, dd: 16 }),
-      C('Yao Ming', { gm: 250, pog: 28, dd: 320, p30: 6, f40: 2, s3: 1 }),
-      C('Jonathan Isaac', { gm: 310, pog: 9 }),
-      C('Kristaps Porzingis', { gm: 280, pog: 48, dd: 140, s3: 145, f40: 4, tech: 26 }),
-      C('A.C. Green', { gm: 3, pog: 153, dd: 320 }),
-      C('Chris Bosh', { gm: 150, pog: 89, dd: 460, p30: 6, tech: 26 }),
-      C('Paul Pierce', { fifty: 1, pog: 170, p3: 275, dd: 190, p30: 28, tech: 65, f40: 10 }),
-      C('Rasheed Wallace', { tech: 317, pog: 177, dd: 240, p3: 165 }),
-      C('Ben Wallace', { dd: 440, pog: 128, tech: 85, s3: 2 }),
-      C('Chauncey Billups', { pog: 146, p3: 235, s3: 155, dd: 55, p30: 6 }),
-      C('Richard Hamilton', { pog: 115, p30: 8, dd: 16 }),
-      C('Tayshaun Prince', { pog: 142 }),
-      C('Gilbert Arenas', { fifty: 1, f40: 14, s3: 196, pog: 20 }),
-      C('Antawn Jamison', { fifty: 2, dd: 270, f40: 6 }),
-      C('Isaiah Thomas', { fifty: 1, f40: 9, threes: 1, s3: 245, pog: 28, dd: 6 }),
-      C('Jaylen Brown', { pog: 112, p3: 250, dd: 55, p30: 20, f40: 10, tech: 27, s3: 155 }),
-      C('Derrick White', { pog: 88, p3: 175, s3: 185, dd: 16 }),
-      C('Mikal Bridges', { pog: 48, s3: 145, dd: 12, gm: 1 }),
-      C('Jarrett Allen', { dd: 270, pog: 28 }),
-      C('Darius Garland', { s3: 175, pog: 18, dd: 16 }),
-      C('Scottie Barnes', { td: 4, dd: 130, pog: 6 }),
-      C('Franz Wagner', { pog: 11, dd: 35 }),
-      C('Jalen Williams', { pog: 33, dd: 35, s3: 105, p30: 3 }),
-      C('Tyrese Maxey', { fifty: 1, threes: 1, s3: 205, pog: 28, p3: 75, f40: 6 }),
-      C('DeAndre Jordan', { dd: 510, pog: 38, tech: 35 }),
-      C('Clint Capela', { dd: 310, pog: 48 }),
-      C('Hassan Whiteside', { dd: 270 }),
-      C('Tristan Thompson', { pog: 118, dd: 150 }),
-      C('Nate Thurmond', { dd: 580, pog: 78 }),
-      C('Bob Lanier', { dd: 430, pog: 64 }),
-      C('George Mikan', { dd: 280, pog: 88 }),
-      C('Dolph Schayes', { dd: 570, pog: 100 }),
-      C('Austin Reaves', { pog: 38, s3: 145, dd: 12 }),
-      C('Jaren Jackson Jr.', { pog: 33, dd: 110, tech: 48, f40: 3, s3: 110 }),
-      C('Kevin Johnson', { td: 5, pog: 105, dd: 240, p30: 12 }),
-      C('Danny Manning', { pog: 24, dd: 130 }),
-      C('Wayman Tisdale', { dd: 120 }),
-      C('Spud Webb', { pog: 51, dd: 20 }),
-      C('Kevin Willis', { pog: 84, dd: 420 }),
-      C('Steve Smith', { pog: 80, p3: 130, dd: 25 }),
-      C('Christian Laettner', { pog: 24, dd: 130 }),
-      C('Brad Daugherty', { dd: 320, pog: 41 }),
-    ];
+    const getSqlText = () => document.getElementById('hoopdarts-sql').textContent;
 
-    /* Name pool — recognized by autocomplete; uncurated names count as 0 */
-    const EXTRA_NAMES = (
-      "Jalen Green|Amen Thompson|Ausar Thompson|Cam Thomas|Cam Johnson|Cameron Payne|Jordan Poole|Andrew Wiggins|Aaron Gordon|Michael Porter Jr.|Bruce Brown|Kentavious Caldwell-Pope|Bones Hyland|Christian Braun|Peyton Watson|Aaron Nesmith|Andrew Nembhard|Obi Toppin|Myles Turner|Bennedict Mathurin|T.J. McConnell|RJ Barrett|Immanuel Quickley|Gradey Dick|Jakob Poeltl|OG Anunoby|Mitchell Robinson|Josh Hart|Donte DiVincenzo|Miles McBride|" +
-      "Precious Achiuwa|Isaiah Hartenstein|Cason Wallace|Luguentz Dort|Aaron Wiggins|Isaiah Joe|Kenrich Williams|Jaylin Williams|Dillon Brooks|Tari Eason|Jabari Smith Jr.|Steven Adams|Jaden Ivey|Jalen Duren|Isaiah Stewart|Marcus Sasser|Killian Hayes|Bojan Bogdanovic|Bogdan Bogdanovic|Onyeka Okongwu|Jalen Johnson|De'Andre Hunter|Saddiq Bey|Dyson Daniels|Zaccharie Risacher|Alex Sarr|Bilal Coulibaly|Kyle Kuzma|Corey Kispert|Tyus Jones|" +
-      "Tre Jones|Keldon Johnson|Devin Vassell|Jeremy Sochan|Stephon Castle|Harrison Barnes|Zach Collins|Malaki Branham|Trey Murphy III|Herbert Jones|Jose Alvarado|Jonas Valanciunas|Naji Marshall|Larry Nance Jr.|Dereck Lively II|Daniel Gafford|Josh Green|Maxi Kleber|Tim Hardaway Jr.|Dwight Powell|Quentin Grimes|Jaden Hardy|P.J. Washington|Miles Bridges|Mark Williams|Grant Williams|Brandon Miller|Tre Mann|Seth Curry|Coby White|" +
-      "Patrick Williams|Ayo Dosunmu|Dalen Terry|Torrey Craig|Goran Dragic|Sam Merrill|Georges Niang|Caris LeVert|Isaac Okoro|Dean Wade|Ty Jerome|Max Strus|Tyler Herro|Nikola Jovic|Jaime Jaquez Jr.|Caleb Martin|Cody Martin|Terry Rozier|Kel'el Ware|Haywood Highsmith|Josh Richardson|Jusuf Nurkic|Grayson Allen|Royce O'Neale|Bol Bol|Ryan Dunn|Damion Lee|Monte Morris|Aaron Holiday|Justin Holiday|" +
-      "Keon Ellis|Kevin Huerter|Trey Lyles|Davion Mitchell|Malik Monk|Chris Duarte|Sasha Vezenkov|Doug McDermott|Jeremy Lamb|Victor Oladipo|Goga Bitadze|Wendell Carter Jr.|Markelle Fultz|Cole Anthony|Gary Harris|Moritz Wagner|Anthony Black|Jett Howard|Caleb Houstan|Deni Avdija|Marvin Bagley III|Richaun Holmes|Johnny Davis|Landry Shamet|Delon Wright|Jared Butler|Jordan Clarkson|Collin Sexton|Walker Kessler|Talen Horton-Tucker|" +
-      "Kelly Olynyk|John Collins|Taylor Hendricks|Keyonte George|Ochai Agbaji|Kris Dunn|Cody Williams|Jaxson Hayes|Nickeil Alexander-Walker|Lonnie Walker IV|Bryn Forbes|Patty Mills|Davis Bertans|Kyle Anderson|Cory Joseph|Rui Hachimura|Jarred Vanderbilt|Gabe Vincent|Dalton Knecht|Max Christie|Alex Caruso|Avery Bradley|Wesley Matthews|Payton Pritchard|Sam Hauser|Luke Kornet|Robert Williams III|Jae Crowder|Tony Allen|Glen Davis|" +
-      "Spencer Dinwiddie|Dennis Schroder|Reggie Jackson|Norman Powell|Ivica Zubac|Terance Mann|Nicolas Batum|Mason Plumlee|Robert Covington|Luke Kennard|Amir Coffey|Austin Rivers|Montrezl Harrell|Serge Ibaka|Thabo Sefolosha|Kendrick Perkins|Nick Collison|Jeff Green|Enes Kanter|Dion Waiters|Andre Roberson|Jerami Grant|Hamidou Diallo|Mike Muscala|Derrick Favors|Rodney Hood|Gordon Hayward|Joe Ingles|Naz Reid|Jaden McDaniels|" +
-      "Rob Dillingham|Mo Bamba|Thanasis Antetokounmpo|Pat Connaughton|Bobby Portis|Gary Trent Jr.|Taurean Prince|Kevin Porter Jr.|Nic Claxton|Day'Ron Sharpe|Dorian Finney-Smith|Ziaire Williams|Noah Clowney|Dennis Smith Jr.|Tobias Harris|Ron Holland II|Jalen Suggs|Kelly Oubre Jr.|De'Anthony Melton|Jared McCain|Guerschon Yabusele|Paul Reed|Chris Boucher|Jevon Carter|Julian Phillips|Craig Porter Jr.|Tristan Vukcevic|Nick Smith Jr.|Jarace Walker|Ben Sheppard|" +
-      "Ousmane Dieng|Julian Strawther|Zeke Nnaji|Dario Saric|Oso Ighodaro|Deandre Ayton|Alex Len|Scoot Henderson|Shaedon Sharpe|Donovan Clingan|Toumani Camara|Matisse Thybulle|Dante Exum|Brandon Clarke|Santi Aldama|Zach Edey|Vince Williams Jr.|John Konchar|GG Jackson|Cam Whitmore|Jock Landale|Reed Sheppard|Jordan Hawkins|Yves Missi|Julian Champagnie|Blake Wesley|Jonathan Kuminga|Moses Moody|Brandin Podziemski|Trayce Jackson-Davis|" +
-      "Kevon Looney|Gary Payton II|Derrick Jones Jr.|Bronny James|Christian Wood|Cam Reddish|AJ Griffin|Justise Winslow|Kendrick Nunn|James Johnson|Meyers Leonard|Tyler Johnson|Wayne Ellington|Jahlil Okafor|Willy Hernangomez|Mario Hezonja|Dragan Bender|Marquese Chriss|Josh Jackson|Frank Ntilikina|Emmanuel Mudiay|Evan Fournier|Iman Shumpert|Tyson Chandler|Charlie Ward|Allan Houston|John Starks|Greg Anthony|Hubert Davis|Herb Williams|" +
-      "Joe Johnson|Josh Smith|Al Jefferson|Paul Millsap|Carlos Boozer|Deron Williams|Mo Williams|Anderson Varejao|Zydrunas Ilgauskas|Larry Hughes|Drew Gooden|Caron Butler|Gerald Wallace|Gerald Green|Stephen Jackson|Al Harrington|David West|Roy Hibbert|George Hill|Lance Stephenson|Tyreke Evans|DeMarre Carroll|Jeff Teague|Kent Bazemore|Kris Humphries|Andrea Bargnani|Charlie Villanueva|Jose Calderon|T.J. Ford|Jermaine O'Neal|" +
-      "Danny Granger|Mike Dunleavy Jr.|Luol Deng|Ben Gordon|Kirk Hinrich|Taj Gibson|Nate Robinson|Raymond Felton|Ty Lawson|Wilson Chandler|Danilo Gallinari|JaVale McGee|Nene|Kenneth Faried|Andre Miller|Arron Afflalo|Corey Brewer|Ricky Rubio|Nikola Pekovic|Gorgui Dieng|Ersan Ilyasova|Brandon Jennings|Michael Carter-Williams|O.J. Mayo|Eric Bledsoe|P.J. Brown|Jamaal Magloire|David Wesley|Jamal Mashburn|Eddie Jones|" +
-      "Tim Thomas|Keith Van Horn|Kerry Kittles|Richard Jefferson|Kenyon Martin|Jason Collins|Devin Harris|Marcus Camby|Stephon Marbury|Steve Francis|Cuttino Mobley|Shane Battier|Luis Scola|Aaron Brooks|Chuck Hayes|Carl Landry|Trevor Ariza|Ron Artest|Antonio McDyess|Rodney Stuckey|Greg Monroe|Brandon Knight|Jerry Stackhouse|Chucky Atkins|Cliff Robinson|Damon Stoudamire|Bonzi Wells|Zach Randolph|Theo Ratliff|Shareef Abdur-Rahim|" +
-      "Vladimir Radmanovic|Rashard Lewis|Brent Barry|Desmond Mason|Vin Baker|Sam Cassell|Michael Redd|Andrew Bogut|John Salmons|Kevin Martin|Francisco Garcia|Beno Udrih|Rudy Gay|Mike Miller|Hedo Turkoglu|Jameer Nelson|Marcin Gortat|Ryan Anderson|Channing Frye|Leandro Barbosa|Shawn Marion|Amar'e Stoudemire|Raja Bell|Quentin Richardson|Jared Dudley|Festus Ezeli|Shaun Livingston|Marreese Speights|Zaza Pachulia|David Lee|" +
-      "Jarrett Jack|Monta Ellis|Andris Biedrins|Corey Maggette|Elton Brand|Chris Kaman|Emeka Okafor|Bruce Bowen|Michael Finley|Antonio Daniels|Malik Rose|Speedy Claxton|Brian Cardinal|Eduardo Najera|Shawn Bradley|Erick Dampier|Josh Howard|DeShawn Stevenson|Brendan Haywood|Etan Thomas|Earl Boykins|Damon Jones|Mike Bibby|Doug Christie|Scot Pollard|Bobby Jackson|Brad Miller|Mehmet Okur|Andrei Kirilenko|Carlos Arroyo|" +
-      "Yi Jianlian|Omer Asik|Daniel Theis|Ish Smith|Garrett Temple|Langston Galloway|Tony Snell|Alec Burks|E'Twaun Moore|Marco Belinelli|Mirza Teletovic|CJ Miles|Jodie Meeks|Anthony Tolliver|Cody Zeller|Tyler Zeller|Miles Plumlee|Frank Kaminsky|Noah Vonleh|TJ Warren|Stanley Johnson|Anthony Bennett|Hasheem Thabeet|Adam Morrison|Michael Olowokandi|Kwame Brown|Darko Milicic|Jay Williams|Jonny Flynn|Wesley Johnson|" +
-      "Derrick Williams|Jimmer Fredette|Jan Vesely|Thomas Robinson|Wally Szczerbiak|Sam Mitchell|Randy Foye|Sebastian Telfair|Lindsey Hunter|Rex Chapman|Antoine Walker|Kenny Anderson|Eddie House|James Posey|Brian Scalabrine|Jared Sullinger|Brandon Bass|Leon Powe|Voshon Lenard|Bimbo Coles|Bobby Phills|Nick Anderson|Brian Shaw|Kenny Smith|Mario Elie|Bryon Russell|Greg Ostertag|Howard Eisley|Antoine Carr|Shandon Anderson|" +
-      "Latrell Sprewell|Chris Gatling|Rod Strickland|Juwan Howard|Calbert Cheaney|Gheorghe Muresan|Manute Bol|Muggsy Bogues|Larry Johnson|Dell Curry|Kendall Gill|Mahmoud Abdul-Rauf|LaPhonso Ellis|Antonio Davis|Dale Davis|Rik Smits|Mark Jackson|Byron Scott|Michael Cooper|Kurt Rambis|Mychal Thompson|Cedric Ceballos|Nick Van Exel|Elden Campbell|Brian Grant|Isaiah Rider|Tom Gugliotta|Terrell Brandon|Tyrone Hill|Craig Ehlo|" +
-      "Ron Harper|Scott Williams|Will Perdue|Stacey King|Jud Buechler|Randy Brown|Bill Wennington|Scott Burrell|Bison Dele|Jack Haley|Nate McMillan|Hersey Hawkins|Dale Ellis|Derrick McKey|Xavier McDaniel|Eddie Johnson|Larry Nance|Rolando Blackman|Derek Harper|Sam Perkins|Brad Davis|James Donaldson|Roy Tarpley|Kiki Vandeweghe|Hot Rod Williams|Jayson Williams|Chris Morris|Stacey Augmon|Drazen Petrovic|Sarunas Marciulionis|" +
-      "Arvydas Sabonis|World B. Free|Sidney Moncrief|Marques Johnson|Terry Cummings|Ricky Pierce|Paul Pressey|Jack Sikma|Tom Chambers|Dan Issel|Calvin Natt|Wayne Cooper|Michael Adams|Walter Davis|Maurice Cheeks|Andrew Toney|Bobby Jones|Caldwell Jones|Darryl Dawkins|Mike Gminski|Johnny Dawkins|Armen Gilliam|Buck Williams|Otis Birdsong|Albert King|Michael Ray Richardson|Bill Cartwright|Trent Tucker|Rory Sparrow|Gerald Wilkins|" +
-      "Johnny Newman|Charles Smith|Maurice Lucas|Jim Paxson|Kenny Carr|Sleepy Floyd|Purvis Short|Joe Barry Carroll|Chris Childs|Otis Thorpe|Robert Reid|Mike Newlin|Kevin Porter|Norm Van Lier|Jerry Sloan|Bob Love|Artis Gilmore|Dan Roundfield|Truck Robinson|Bobby Dandridge|Jamaal Wilkes|Norm Nixon|Swen Nater|Marvin Webster|David Thompson|James Silas|Larry Kenon|Marvin Barnes|Mel Daniels|Roger Brown|" +
-      "Mack Calvin|Earl Monroe|Dave Bing|Nate Archibald|Spencer Haywood|Connie Hawkins|Hal Greer|Billy Cunningham|Chet Walker|Willis Reed|Dave DeBusschere|Bill Bradley|Dick Barnett|Jerry Lucas|Cazzie Russell|Phil Jackson|Sam Jones|K.C. Jones|Tom Heinsohn|Bill Sharman|Frank Ramsey|Don Nelson|Bailey Howell|JoJo White|Paul Silas|Charlie Scott|Paul Westphal|Gus Williams|Fred Brown|Lonnie Shelton|" +
-      "Gail Goodrich|Happy Hairston|Zelmo Beaty|Lenny Wilkens|Richie Guerin|Lou Hudson|Walt Bellamy|Cliff Hagan|Slater Martin|Ed Macauley|Gus Johnson|Jack Marin|Archie Clark|Dick Van Arsdale|Tom Van Arsdale|Jeff Mullins|Rudy LaRusso|Rudy Tomjanovich|Calvin Murphy|Paul Arizin|Tom Gola|Guy Rodgers|Al Attles|Dino Radja|Dee Brown|Reggie Lewis|Danny Ainge|Jerry Sichting|Scott Wedman|Cedric Maxwell|" +
-      "M.L. Carr|Gerald Henderson|Quinn Buckner|Terry Porter|Jerome Kersey|Kevin Duckworth|Mark West|Danny Ferry|Steve Blake|Earl Watson|Sedale Threatt|Benoit Benjamin|Olden Polynice|Pooh Richardson|Doug West|Felton Spencer|Luc Longley|John Paxson|B.J. Armstrong|Cliff Levingston|Mark Aguirre|Orlando Woolridge|Reggie Theus|Kelly Tripucka|Lionel Hollins|Sidney Wicks|Geoff Petrie|Bob Gross|Dave Twardzik|Austin Carr|" +
-      "Bingo Smith|Campy Russell|Phil Chenier|Kevin Grevey|Mitch Kupchak|Junior Bridgeman|Brian Winters|Ernie DiGregorio|Randy Smith|Garfield Heard|John Drew|Tree Rollins|Jeremy Lin|Michael Beasley|Greivis Vasquez|Chandler Parsons|Terrence Jones|Patrick Patterson|Trey Burke|Otto Porter Jr.|Thomas Bryant|Trendon Watford|Jalen Smith|Isaiah Jackson|Bismack Biyombo|Boban Marjanovic|JaMychal Green|Javonte Green|Garrison Mathews|Jalen McDaniels|" +
-      "Vinnie Johnson|James Edwards|John Salley|Mark Eaton|Thurl Bailey|Darrell Griffith|Tyrone Corbin|Danny Schayes|Bill Hanzlik|T.R. Dunn|Chris Dudley|Rony Seikaly|Sherman Douglas|Harold Miner|Billy Owens|Lionel Simmons|Pervis Ellison|Eddy Curry|Jamaal Tinsley|Smush Parker|Sasha Vujacic|Jordan Farmar|Luke Walton|Rick Fox|Devean George|Shannon Brown|Nick Young|Matas Buzelis|Tristan da Silva|Tidjane Salaun|Bub Carrington|Kyshawn George|Devin Carter|Isaiah Collier|Ajay Mitchell|Quinten Post|Jaylen Wells|Dalano Banton|Duop Reath|Simone Fontecchio|Luka Garza|Sandro Mamukelashvili|Drew Eubanks"
-    ).split('|');
-
-    const PLAYERS = (() => {
-      const seen = new Set();
-      const out = [];
-      for (const pl of CURATED) {
-        const k = norm(pl.name);
-        if (!seen.has(k)) { seen.add(k); out.push(pl); }
+    function parseSqlDataset(sql) {
+      const players = new Map(); // search_name -> display name
+      const byId = new Map();    // id -> search_name
+      const stats = new Map();   // search_name -> { category: value }
+      const [head, statSec] = sql.split('-- @stats');
+      const playerSec = head.split('-- @players')[1] || '';
+      const playerRe = /\((\d+),'((?:[^']|'')*)','((?:[^']|'')*)'\)/g;
+      const statRe = /\((\d+),'([a-z0-9]+)',(\d+)\)/g;
+      let m;
+      while ((m = playerRe.exec(playerSec))) {
+        const name = m[2].replace(/''/g, "'");
+        const sn = m[3].replace(/''/g, "'");
+        players.set(sn, name);
+        byId.set(+m[1], sn);
       }
-      for (const n of EXTRA_NAMES) {
-        const k = norm(n);
-        if (!k || seen.has(k)) continue;
-        seen.add(k);
-        out.push({ name: n, stats: {} });
+      while ((m = statRe.exec(statSec || ''))) {
+        const sn = byId.get(+m[1]);
+        if (!sn) continue;
+        if (!stats.has(sn)) stats.set(sn, {});
+        stats.get(sn)[m[2]] = +m[3];
       }
-      return out;
-    })();
+      return { players, stats };
+    }
+
+    function makeMemoryBackend({ players, stats }) {
+      const list = [...players.entries()].map(([sn, name]) => ({ sn, name }));
+      return {
+        engine: 'in-memory fallback',
+        count: list.length,
+        search(nq, limit = 8) {
+          if (!nq) return [];
+          const starts = [];
+          const contains = [];
+          for (const p of list) {
+            if (p.sn.startsWith(nq)) starts.push(p.name);
+            else if (p.sn.includes(nq)) contains.push(p.name);
+          }
+          return [...starts, ...contains].slice(0, limit);
+        },
+        find(nq) { return players.get(nq) || null; },
+        getStat(nq, cat) { const s = stats.get(nq); return s ? (s[cat] || 0) : 0; },
+      };
+    }
+
+    function makeSqliteBackend(db) {
+      const all = (sql, params) => {
+        const stmt = db.prepare(sql);
+        stmt.bind(params);
+        const rows = [];
+        while (stmt.step()) rows.push(stmt.get());
+        stmt.free();
+        return rows;
+      };
+      return {
+        engine: 'SQLite via sql.js',
+        count: all('SELECT COUNT(*) FROM players')[0][0],
+        search(nq, limit = 8) {
+          if (!nq) return [];
+          return all(
+            'SELECT name FROM players WHERE search_name LIKE $c ' +
+            'ORDER BY (search_name LIKE $p) DESC, search_name LIMIT $n',
+            { $c: '%' + nq + '%', $p: nq + '%', $n: limit }
+          ).map((r) => r[0]);
+        },
+        find(nq) {
+          const r = all('SELECT name FROM players WHERE search_name = $n', { $n: nq });
+          return r.length ? r[0][0] : null;
+        },
+        getStat(nq, cat) {
+          const r = all(
+            'SELECT ps.value FROM player_stats ps JOIN players p ON p.id = ps.player_id ' +
+            'WHERE p.search_name = $n AND ps.category = $c',
+            { $n: nq, $c: cat }
+          );
+          return r.length ? r[0][0] : 0;
+        },
+      };
+    }
+
+    let DBI = null;
+    async function initDB() {
+      if (DBI) return DBI;
+      const sqlText = getSqlText();
+      try {
+        if (typeof initSqlJs !== 'function') throw new Error('sql.js script not loaded');
+        const SQL = await initSqlJs({ locateFile: (f) => SQL_CDN + f });
+        const db = new SQL.Database();
+        db.run(sqlText);
+        DBI = makeSqliteBackend(db);
+      } catch (e) {
+        DBI = makeMemoryBackend(parseSqlDataset(sqlText));
+      }
+      return DBI;
+    }
 
     /* ------------------------------------------------------------------ */
     /* Utilities                                                           */
@@ -520,7 +450,7 @@
       return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, '').trim();
     }
 
-    const findPlayer = (name) => PLAYERS.find((pl) => norm(pl.name) === norm(name));
+    const findPlayer = (name) => (DBI ? DBI.find(norm(name)) : null);
 
     const todayKey = () => new Date().toISOString().slice(0, 10);
 
@@ -533,6 +463,7 @@
 
     const throwEmoji = (h) => {
       if (h.bust) return '❌';
+      if (h.raw > 0 && h.value === 0) return '🚫';
       if (h.value >= 100) return '🔥';
       if (h.value >= 50) return '🏀';
       if (h.value >= 25) return '🎯';
@@ -763,7 +694,7 @@
                   {mode === 'daily' ? "Today's Category" : 'Active Category'}
                 </p>
                 <span className="rounded-full border border-line bg-panel2 px-2 py-0.5 text-[10px] font-semibold text-slate-400">
-                  single-throw cap: {THROW_CAP}
+                  over {MAX_VISIT} or bogey = 0
                 </span>
               </div>
               <h2 className="font-score text-2xl tracking-wide text-white sm:text-3xl">{cat.name}</h2>
@@ -823,7 +754,7 @@
           <div className="mt-1.5 flex items-center gap-3 text-[11px] text-slate-500">
             <span className="tabular">{player.history.length} throws</span>
             <span className="tabular">avg {avg}</span>
-            {player.score > 0 && player.score <= THROW_CAP && (
+            {player.score > 0 && player.score <= MAX_VISIT && (
               <span className="font-semibold text-court-glow">checkout live</span>
             )}
           </div>
@@ -841,18 +772,8 @@
       const [shake, setShake] = useState(0);
       const inputRef = useRef(null);
 
-      const sugg = useMemo(() => {
-        const nq = norm(q);
-        if (!nq) return [];
-        const starts = [];
-        const contains = [];
-        for (const pl of PLAYERS) {
-          const n = norm(pl.name);
-          if (n.startsWith(nq)) starts.push(pl);
-          else if (n.includes(nq)) contains.push(pl);
-        }
-        return [...starts, ...contains].slice(0, 8);
-      }, [q]);
+      // Live database query on every keystroke
+      const sugg = useMemo(() => (DBI ? DBI.search(norm(q), 8) : []), [q]);
 
       useEffect(() => { setHi(0); }, [q]);
 
@@ -869,9 +790,9 @@
       const submit = () => {
         if (disabled || !q.trim()) return;
         const exact = findPlayer(q);
-        if (exact) return fire(exact.name);
+        if (exact) return fire(exact);
         const pick = sugg[hi] || sugg[0];
-        if (pick) return fire(pick.name);
+        if (pick) return fire(pick);
         fire(q.trim()); // lets the parent produce a "not in database" message
       };
 
@@ -915,12 +836,12 @@
 
           {focus && sugg.length > 0 && !disabled && (
             <ul className="absolute z-30 mt-2 w-full overflow-hidden rounded-xl border border-line bg-panel2 shadow-2xl shadow-black/50">
-              {sugg.map((pl, i) => {
-                const isUsed = used.includes(pl.name);
+              {sugg.map((name, i) => {
+                const isUsed = used.includes(name);
                 return (
-                  <li key={pl.name}>
+                  <li key={name}>
                     <button
-                      onMouseDown={(e) => { e.preventDefault(); fire(pl.name); }}
+                      onMouseDown={(e) => { e.preventDefault(); fire(name); }}
                       onMouseEnter={() => setHi(i)}
                       className={
                         'flex w-full items-center justify-between px-4 py-2.5 text-left text-sm transition ' +
@@ -928,7 +849,7 @@
                         (isUsed ? ' opacity-40' : '')
                       }
                     >
-                      <span className={isUsed ? 'line-through' : ''}>{pl.name}</span>
+                      <span className={isUsed ? 'line-through' : ''}>{name}</span>
                       {isUsed
                         ? <span className="text-[10px] font-bold uppercase tracking-widest text-red-400">used</span>
                         : i === hi && <ChevronRight size={14} className="text-court" />}
@@ -977,9 +898,11 @@
                 <p className="truncate text-[11px] text-slate-500">
                   {h.bust
                     ? `would have gone below ${CHECKOUT_MIN} — score reset, life lost`
-                    : h.value === 0
-                      ? `no tracked ${catShort} — throw burned`
-                      : `−${h.value} ${catShort}` + (h.raw > THROW_CAP ? ` (capped from ${h.raw})` : '')}
+                    : h.raw > 0 && h.value === 0
+                      ? `${h.raw} ${catShort} — impossible darts visit, scores 0`
+                      : h.value === 0
+                        ? `no tracked ${catShort} — throw burned`
+                        : `−${h.value} ${catShort}`}
                 </p>
               </div>
               <span className={'tabular shrink-0 font-score text-lg tracking-wide ' + (h.bust ? 'text-red-400' : 'text-court-glow')}>
@@ -1132,20 +1055,21 @@
 
       const guess = useCallback((rawName) => {
         if (state.status !== 'playing') return false;
-        const player = findPlayer(rawName);
-        if (!player) {
+        const canonical = findPlayer(rawName);
+        if (!canonical) {
           setMsg({ t: 'err', text: `“${rawName}” isn't in the database — pick a name from the suggestions.` });
           return false;
         }
-        if (state.used.includes(player.name)) {
-          setMsg({ t: 'err', text: `${player.name} has already been thrown this game.` });
+        if (state.used.includes(canonical)) {
+          setMsg({ t: 'err', text: `${canonical} has already been thrown this game.` });
           return false;
         }
 
         const i = state.turn;
         const me = state.players[i];
-        const raw = player.stats[cat.key] || 0;
-        const value = Math.min(raw, THROW_CAP);
+        const raw = DBI.getStat(norm(canonical), cat.key); // live SQL lookup
+        const value = visitValue(raw);
+        const impossible = raw > 0 && value === 0;
         const newScore = me.score - value;
         const bust = newScore < CHECKOUT_MIN;
 
@@ -1156,7 +1080,7 @@
 
         if (bust) {
           players[i].lives -= 1;
-          players[i].history.push({ name: player.name, value, raw, bust: true, scoreAfter: me.score });
+          players[i].history.push({ name: canonical, value, raw, bust: true, scoreAfter: me.score });
           if (players[i].lives <= 0) {
             status = 'over';
             winner = duel ? (i === 0 ? 1 : 0) : null;
@@ -1164,30 +1088,30 @@
           setBustTick((b) => b + 1);
           setMsg({
             t: 'bust',
-            text: `BUST! ${player.name} (−${value}) blows past ${CHECKOUT_MIN}. Score resets to ${me.score} — ${players[i].lives} ${players[i].lives === 1 ? 'life' : 'lives'} left.`,
+            text: `BUST! ${canonical} (−${value}) blows past ${CHECKOUT_MIN}. Score resets to ${me.score} — ${players[i].lives} ${players[i].lives === 1 ? 'life' : 'lives'} left.`,
           });
         } else {
           players[i].score = newScore;
-          players[i].history.push({ name: player.name, value, raw, bust: false, scoreAfter: newScore });
+          players[i].history.push({ name: canonical, value, raw, bust: false, scoreAfter: newScore });
           if (newScore <= 0) {
             status = 'over';
             winner = i;
             perfect = newScore === 0;
             setMsg(null);
+          } else if (impossible) {
+            setMsg({ t: 'info', text: `${canonical}: ${raw} ${cat.short} — not a scoreable darts visit (over ${MAX_VISIT} or a bogey number). Counts as 0.` });
           } else if (value === 0) {
-            setMsg({ t: 'info', text: `${player.name} has no tracked ${cat.short} — a brick. Throw burned for 0.` });
-          } else if (raw > THROW_CAP) {
-            setMsg({ t: 'good', text: `${player.name}: ${raw} ${cat.short}, capped to the maximum throw of ${THROW_CAP}!` });
-          } else if (newScore <= THROW_CAP) {
+            setMsg({ t: 'info', text: `${canonical} has no tracked ${cat.short} — a brick. Throw burned for 0.` });
+          } else if (newScore <= MAX_VISIT) {
             setMsg({ t: 'good', text: `−${value}. You're in throwing distance of the checkout zone (0 to ${CHECKOUT_MIN}).` });
           } else {
-            setMsg({ t: 'good', text: `${player.name} drains −${value} ${cat.short}.` });
+            setMsg({ t: 'good', text: `${canonical} drains −${value} ${cat.short}.` });
           }
         }
 
         const turn = status === 'playing' && duel ? (i + 1) % players.length : i;
         setLastThrow({ id: Date.now(), value, bust });
-        setState({ players, turn, used: [...state.used, player.name], status, winner, perfect });
+        setState({ players, turn, used: [...state.used, canonical], status, winner, perfect });
         return true;
       }, [state, cat, duel]);
 
@@ -1228,7 +1152,7 @@
               <CourtVisualizer
                 score={cur.score}
                 bustTick={bustTick}
-                inCheckoutRange={cur.score > 0 && cur.score <= THROW_CAP}
+                inCheckoutRange={cur.score > 0 && cur.score <= MAX_VISIT}
                 won={gameOver && state.winner !== null && state.players[state.winner] === cur}
               />
               {lastThrow && !gameOver && (
@@ -1270,7 +1194,7 @@
                   onGuess={guess}
                   used={state.used}
                   disabled={gameOver}
-                  placeholder={'Throw an NBA player… (max −' + THROW_CAP + ')'}
+                  placeholder={'Throw an NBA player… (over ' + MAX_VISIT + ' scores 0)'}
                 />
                 {msg && (
                   <p className={
@@ -1365,7 +1289,7 @@
             <div className="animate-pop mt-4 rounded-2xl border border-line bg-panel p-4 text-xs leading-relaxed text-slate-400 sm:p-5 sm:text-sm">
               <ul className="list-inside space-y-1.5">
                 <li>🎯 You start at <b className="text-white">501</b>. Each turn, name an NBA player — their career stat in the active category is subtracted from your score.</li>
-                <li>🧮 A single throw is capped at <b className="text-white">180</b>, just like a perfect dart visit.</li>
+                <li>🧮 Every throw must be a <b className="text-white">possible 3-dart visit</b>. Anything over <b className="text-white">180</b> — or a bogey number (163, 166, 169, 172, 173, 175, 176, 178, 179) — scores <b className="text-red-300">0</b> and burns the throw. Westbrook's 203 triple-doubles? Worthless. 🚫</li>
                 <li>🏆 Land on <b className="text-emerald-300">exactly 0</b> for a <b className="text-court-glow">Perfect Checkout</b>, or anywhere from <b className="text-white">0 down to −10</b> to win.</li>
                 <li>💥 Dropping <b className="text-red-300">below −10</b> is a <b className="text-red-300">BUST</b>: your score resets to where the turn started and you lose one of your <b className="text-white">3 lives</b>. Lose all three and it's game over.</li>
                 <li>🧱 A player with <b className="text-white">0</b> in the category still burns your throw — choose wisely.</li>
@@ -1454,7 +1378,7 @@
           </button>
 
           <p className="mt-6 text-center text-[10px] text-slate-600">
-            {PLAYERS.length} players in the database · {CATEGORIES.length} stat categories · darts rules, basketball soul
+            {DBI ? DBI.count : ''} players in the SQL database · {CATEGORIES.length} stat categories · {DBI ? DBI.engine : ''}
           </p>
         </div>
       );
@@ -1465,6 +1389,21 @@
     /* ------------------------------------------------------------------ */
     function App() {
       const [config, setConfig] = useState(null);
+      const [dbReady, setDbReady] = useState(false);
+      useEffect(() => {
+        let alive = true;
+        initDB().then(() => { if (alive) setDbReady(true); });
+        return () => { alive = false; };
+      }, []);
+      if (!dbReady) {
+        return (
+          <div className="flex min-h-screen flex-col items-center justify-center gap-3">
+            <span className="flex h-14 w-14 animate-bounce items-center justify-center rounded-3xl bg-court text-2xl shadow-glow">🏀</span>
+            <p className="font-score text-2xl tracking-[0.2em] text-white">HOOP DARTS</p>
+            <p className="text-xs text-slate-500">loading the stat database…</p>
+          </div>
+        );
+      }
       return (
         <div className="min-h-screen">
           {config
