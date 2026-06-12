@@ -23,7 +23,7 @@ python3 -m http.server 8000
 ## The database
 
 The dataset lives in **`data/hoopdarts.sql`** — a standard SQLite-dialect
-database (~1,150 players spanning every era, ~1,300 stat rows across 10
+database (1,400+ players spanning every era, ~2,900 stat rows across 13
 categories) with a normalized schema:
 
 ```
@@ -45,6 +45,27 @@ database, re-embed it with:
 node tools/inject-data.mjs
 ```
 
+## Live data pipeline (basketball-reference.com)
+
+Three categories are built from real scraped data rather than curated
+approximations: **2025-26 Games Played**, **2025-26 Points Per Game**, and
+**2025-26 Total 3-Pointers Made**. The pipeline:
+
+```bash
+python3 nba_scraper.py        # → nba_stats.db (rate-limited, polite scrape)
+python3 tools/merge_scrape.py # folds the season into data/hoopdarts.sql
+node tools/inject-data.mjs    # re-embeds the SQL into index.html
+```
+
+`nba_scraper.py` fetches the per-game table with a realistic User-Agent,
+sleeps 4 seconds before *and* after the request (far under the site's
+20 req/min limit), strips the repeated header rows, and stores the snapshot
+in SQLite (`nba_stats.db`, table `player_stats`, `if_exists='replace'`).
+The merge step matches scraped players to the game roster by normalized
+name and adds anyone new — rookies like Cooper Flagg arrive automatically.
+Scraped values are stored untouched: under darts-legal scoring, a real stat
+over 180 (or on a bogey number) simply scores 0 in-game.
+
 ## Darts-legal scoring
 
 Every throw must be a **possible 3-dart visit**:
@@ -61,12 +82,13 @@ Every throw must be a **possible 3-dart visit**:
 - **Three game modes** — Solo 501, 1 v 1 Duel (alternating throws), and a
   **Daily Challenge** with a date-seeded category and localStorage persistence
   (your board is saved after every throw, so refreshing won't undo a bust).
-- **Ten stat categories** — Triple-Doubles, 50-Point Games, Playoff Games
-  Played, Technical Fouls, Highest Single-Season 3PM, 40-Point Games, Career
-  Playoff 3PM, Career Double-Doubles, 30-Point Playoff Games, and Career Games
-  Missed — plus a random-category option. Every category is verified to be
+- **Thirteen stat categories** — ten career boards (Triple-Doubles, 50-Point
+  Games, Playoff Games Played, Technical Fouls, Highest Single-Season 3PM,
+  40-Point Games, Career Playoff 3PM, Career Double-Doubles, 30-Point Playoff
+  Games, Career Games Missed) plus three live 2025-26 boards scraped from
+  basketball-reference.com — and a random-category option. Every category is verified to be
   mathematically winnable under darts-legal scoring.
-- **SQL-backed autocomplete** over the 1,150+ player database, so spelling
+- **SQL-backed autocomplete** over the 1,400+ player database, so spelling
   never costs you a turn — but a lazy throw might.
 - **Animated hoop visualizer**, broadcast-style scoreboard, throw history with
   per-throw feedback, and win/loss modals with match stats, confetti, and an
